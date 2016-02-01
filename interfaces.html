@@ -1,0 +1,806 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>interfaces package &mdash; COSmic Microwave background linear Operators MAp-making Preconditioner 0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/agogo.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="COSmic Microwave background linear Operators MAp-making Preconditioner 0 documentation" href="index.html" />
+    <link rel="up" title="Modules" href="modules.html" />
+    <link rel="next" title="utilities package" href="utilities.html" />
+    <link rel="prev" title="Modules" href="modules.html" /> 
+  </head>
+  <body>
+    <div class="header-wrapper">
+      <div class="header">
+        <div class="headertitle"><a
+          href="index.html">COSmic Microwave background linear Operators MAp-making Preconditioner 0 documentation</a></div>
+        <div class="rel">
+          <a href="modules.html" title="Modules"
+             accesskey="P">previous</a> |
+          <a href="utilities.html" title="utilities package"
+             accesskey="N">next</a> |
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a>
+        </div>
+       </div>
+    </div>
+
+    <div class="content-wrapper">
+      <div class="content">
+        <div class="document">
+            
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="interfaces-package">
+<h1>interfaces package<a class="headerlink" href="#interfaces-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-interfaces.deflationlib">
+<span id="interfaces-deflationlib-module"></span><h2>interfaces.deflationlib module<a class="headerlink" href="#module-interfaces.deflationlib" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="interfaces.deflationlib.arnoldi">
+<tt class="descclassname">interfaces.deflationlib.</tt><tt class="descname">arnoldi</tt><big>(</big><em>A</em>, <em>b</em>, <em>x0=None</em>, <em>tol=1e-05</em>, <em>maxiter=1000</em>, <em>inner_m=30</em><big>)</big><a class="reference internal" href="_modules/interfaces/deflationlib.html#arnoldi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.deflationlib.arnoldi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes an orthonormal basis to get the approximated eigenvalues
+(Ritz eigenvalues) and eigenvector.</p>
+<p>The basis comes from a Gram-Schmidt orthonormalization of the Krylov
+subspace  defined as:</p>
+<div class="math">
+<p><img src="_images/math/1d71b0579bfea102abe0439cf720f82701a7028f.png" alt="K_m = span( b, Ab, ..., A^{m-1} b )"/></p>
+</div><p>at the <img class="math" src="_images/math/c4bb40dd65eae6c11b325989b14e0b8d35e4e3ef.png" alt="m"/>-th iteration.</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">A</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{sparse matrix , linear operator}</span></dt>
+<dd><p class="first last">matrix we want to approximate eigenvectors;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">b</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{array}</span></dt>
+<dd><p class="first last">array to build the Krylov subspace ;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">x0</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{array}</span></dt>
+<dd><p class="first last">initial guess vector to compute residuals;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">tol</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{float}</span></dt>
+<dd><p class="first last">tolerance threshold to the Ritz eigenvalue computation;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">maxiter</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{int}</span></dt>
+<dd><p class="first last">to validate the result one can compute <tt class="docutils literal"><span class="pre">maxiter</span></tt> times the
+eigenvalues, to seek the stability of the algorithm;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">inner_m</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{int}</span></dt>
+<dd><p class="first">maximum number of iterations within the Arnoldi algorithm,</p>
+<div class="last admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last"><tt class="docutils literal"><span class="pre">inner_m</span> <span class="pre">&lt;=N_pix</span></tt></p>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+<p><strong>Returns</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">w</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{list of arrays}</span></dt>
+<dd><p class="first last">the orthonormal basis <tt class="docutils literal"><span class="pre">m</span> <span class="pre">x</span> <span class="pre">N_pix</span></tt>;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">h</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{list of arrays}</span></dt>
+<dd><p class="first last">the elements of the <img class="math" src="_images/math/e9c02c8ec64f4c33959d51eca279e417eb71dbab.png" alt="H_m"/> Hessenberg matrix.
+At the <tt class="docutils literal"><span class="pre">m</span></tt>-th iteration  <img class="math" src="_images/math/96791c632b94559ff5ce20f48f7b8f6aa51f5d87.png" alt="h_m"/> has got <img class="math" src="_images/math/17e7c9a88fff44f20b2b7d58caa082246c177d64.png" alt="m+1"/> elements.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="interfaces.deflationlib.build_Z">
+<tt class="descclassname">interfaces.deflationlib.</tt><tt class="descname">build_Z</tt><big>(</big><em>z</em>, <em>y</em>, <em>w</em>, <em>eps</em><big>)</big><a class="reference internal" href="_modules/interfaces/deflationlib.html#build_Z"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.deflationlib.build_Z" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build the deflation matrix <img class="math" src="_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/>. Its columns are the <img class="math" src="_images/math/2ede365ad144ab396916ec60458da03860803078.png" alt="r"/>
+selected eigenvectors <img class="math" src="_images/math/339538a5c32c52022be4b5fac6bce59bceb59527.png" alt="Z_i=w_m*y_i"/> s.t. their eigenvalues  <img class="math" src="_images/math/0c9b8c78a7a049eca8f2168d0691afc6a65a9dad.png" alt="z_i"/>
+are smaller than a certain threshold <tt class="docutils literal"><span class="pre">eps</span></tt>.</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">z</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{array}</span></dt>
+<dd><p class="first last">eigenvalues of <img class="math" src="_images/math/e9c02c8ec64f4c33959d51eca279e417eb71dbab.png" alt="H_m"/>;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">y</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{list of arrays}</span></dt>
+<dd><p class="first last">eigenvectors of <img class="math" src="_images/math/e9c02c8ec64f4c33959d51eca279e417eb71dbab.png" alt="H_m"/>;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">w</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{list of arrays}</span></dt>
+<dd><p class="first last">orthonormal basis (computed with the Arnoldi algorithm);</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">eps</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{float}</span></dt>
+<dd><p class="first last">threshold to select the smallest eigenvalues.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p><strong>Returns</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">Z</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{matrix}</span></dt>
+<dd><p class="first last">deflation subspace matrix;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">r</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{int}</span></dt>
+<dd><p class="first last"><img class="math" src="_images/math/f15fd4a0ae024d3f82d5ef809bdf4ad421da13a1.png" alt="rank(Z)"/>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="interfaces.deflationlib.build_hess">
+<tt class="descclassname">interfaces.deflationlib.</tt><tt class="descname">build_hess</tt><big>(</big><em>h</em>, <em>m</em><big>)</big><a class="reference internal" href="_modules/interfaces/deflationlib.html#build_hess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.deflationlib.build_hess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute  and store (as a Hessenberg matrix) the <img class="math" src="_images/math/e9c02c8ec64f4c33959d51eca279e417eb71dbab.png" alt="H_m"/> matrix from the
+output list <tt class="docutils literal"><span class="pre">h</span></tt> of the <a class="reference internal" href="#interfaces.deflationlib.arnoldi" title="interfaces.deflationlib.arnoldi"><tt class="xref py py-func docutils literal"><span class="pre">arnoldi()</span></tt></a> routine.</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">h</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{list of arrays}</span></dt>
+<dd><p class="first last">matrix coefficients ;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">m</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{int}</span></dt>
+<dd><p class="first last">size of <tt class="docutils literal"><span class="pre">H</span></tt></p>
+</dd>
+</dl>
+</li>
+</ul>
+<p><strong>Returns</strong></p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">H</span></tt> :{numpy.matrix}</li>
+</ul>
+</dd></dl>
+
+</div>
+<div class="section" id="module-interfaces.linearoperators">
+<span id="interfaces-linearoperators-module"></span><h2>interfaces.linearoperators module<a class="headerlink" href="#module-interfaces.linearoperators" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="interfaces.linearoperators.BlockDiagonalPreconditionerLO">
+<em class="property">class </em><tt class="descclassname">interfaces.linearoperators.</tt><tt class="descname">BlockDiagonalPreconditionerLO</tt><big>(</big><em>A</em>, <em>n</em>, <em>pol=1</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#BlockDiagonalPreconditionerLO"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.BlockDiagonalPreconditionerLO" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">linop.linop.LinearOperator</span></tt></p>
+<p>Standard preconditioner defined as:</p>
+<div class="math">
+<p><img src="_images/math/2f97efc039e4af2a365c7c507144b189d3d7d61f.png" alt="M_{BD}=( A \, diag(N^{-1}) A^T)^{-1}"/></p>
+</div><p>where <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/> is a <a class="reference internal" href="#interfaces.linearoperators.SparseLO" title="interfaces.linearoperators.SparseLO"><tt class="xref py py-class docutils literal"><span class="pre">SparseLO</span></tt></a> operator.
+Such inverse operator  could be easily computed given the structure of the
+matrix <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>, (sparse if <cite>pol=1</cite>, block-sparse if <cite>pol=3,2</cite>).</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">n</span></tt>:{int}</dt>
+<dd><p class="first last">the size of the problem, <tt class="docutils literal"><span class="pre">npix</span></tt>;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">A</span></tt>:{:class:SparseLO}</dt>
+<dd><p class="first last">the linear operator related to the pointing matrix. Its members (<cite>counts</cite>, <cite>masks</cite>,
+<cite>sine</cite>, <cite>cosine</cite>, etc... ) are  needed to explicitly compute the inverse of the
+<img class="math" src="_images/math/4daa07ad18479dcceb8714bfa4927b249ee26ccb.png" alt="n_{pix}"/> blocks of <img class="math" src="_images/math/b6dff2d2005fe2ed28c28a71fe0f578e3cf755a8.png" alt="M_{BD}"/>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">pol</span></tt>:{int}</dt>
+<dd><p class="first last">the size of each block of the matrix.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="method">
+<dt id="interfaces.linearoperators.BlockDiagonalPreconditionerLO.mult">
+<tt class="descname">mult</tt><big>(</big><em>x</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#BlockDiagonalPreconditionerLO.mult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.BlockDiagonalPreconditionerLO.mult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Action of <img class="math" src="_images/math/8cfe6ac9a9a3add302a90935bfec35105653e37f.png" alt="y=( A \, diag(N^{-1}) A^T)^{-1} x"/>,
+where <img class="math" src="_images/math/188c175aac0a8a9c22499336711b5d7256407254.png" alt="x"/> is   an <img class="math" src="_images/math/4daa07ad18479dcceb8714bfa4927b249ee26ccb.png" alt="n_{pix}"/> array.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="interfaces.linearoperators.BlockLO">
+<em class="property">class </em><tt class="descclassname">interfaces.linearoperators.</tt><tt class="descname">BlockLO</tt><big>(</big><em>blocksize</em>, <em>t</em>, <em>offdiag=False</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#BlockLO"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.BlockLO" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">interfaces.blkop.BlockDiagonalLinearOperator</span></tt></p>
+<p>Derived class from  <tt class="xref py py-mod docutils literal"><span class="pre">blkop.BlockDiagonalLinearOperator</span></tt>.
+It basically relies on the definition of a block diagonal operator,
+composed by <tt class="docutils literal"><span class="pre">nblocks</span></tt> diagonal operators.
+If it does not have any  off-diagonal terms (<em>default case</em> ), each block is a multiple  of
+the identity characterized by the  values listed in <tt class="docutils literal"><span class="pre">t</span></tt> and therefore is
+initialized by the <a class="reference internal" href="#interfaces.linearoperators.BlockLO.build_blocks" title="interfaces.linearoperators.BlockLO.build_blocks"><tt class="xref py py-func docutils literal"><span class="pre">BlockLO.build_blocks()</span></tt></a> as a <tt class="xref py py-class docutils literal"><span class="pre">linop.DiagonalOperator</span></tt>.</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">blocksize</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{int}</span></dt>
+<dd><p class="first last">size of each diagonal block, it is : <img class="math" src="_images/math/2dfdb07f357361e2e51a669a342aa76dcd67e493.png" alt="blocksize= n/nblocks"/>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">t</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{array}</span></dt>
+<dd><p class="first last">noise values for each block</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">offdiag</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{bool, default <tt class="docutils literal"><span class="pre">False</span></tt>}</span></dt>
+<dd><p class="first">strictly  related to the way  the array <tt class="docutils literal"><span class="pre">t</span></tt> is passed (see notes ).</p>
+<div class="last admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last">
+<li><dl class="first docutils">
+<dt>True <span class="classifier-delimiter">:</span> <span class="classifier"><tt class="docutils literal"><span class="pre">t</span></tt> is a list of array,</span></dt>
+<dd><p class="first last"><tt class="docutils literal"><span class="pre">shape(t)=</span> <span class="pre">[nblocks,bandsize]</span></tt>, to have a Toeplitz band diagonal operator,
+<img class="math" src="_images/math/3402692efe110375ef1344664dbb6b9a074f24b0.png" alt="bandsize != blocksize"/></p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>False <span class="classifier-delimiter">:</span> <span class="classifier"><tt class="docutils literal"><span class="pre">t</span></tt> is an array, <tt class="docutils literal"><span class="pre">shape(t)=[nblocks]</span></tt>.</span></dt>
+<dd><p class="first last">each block is identified by a scalar value in the diagonal.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="method">
+<dt id="interfaces.linearoperators.BlockLO.build_blocks">
+<tt class="descname">build_blocks</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#BlockLO.build_blocks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.BlockLO.build_blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build each block of the operator either with or
+without off diagonal terms.
+Each block is initialized as a Toeplitz (either <strong>band</strong> or <strong>diagonal</strong>)
+linear operator.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">self.diag</span></tt>: {numpy array}</dt>
+<dd>the array resuming the <img class="math" src="_images/math/79a7815c3aaedb936341f24b968e245903e119c0.png" alt="diag(N^{-1})"/>.</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="interfaces.linearoperators.BlockLO.isoffdiag">
+<tt class="descname">isoffdiag</tt><a class="reference internal" href="_modules/interfaces/linearoperators.html#BlockLO.isoffdiag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.BlockLO.isoffdiag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Property saying whether or not the operator has
+off-diagonal terms.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="interfaces.linearoperators.CoarseLO">
+<em class="property">class </em><tt class="descclassname">interfaces.linearoperators.</tt><tt class="descname">CoarseLO</tt><big>(</big><em>Z</em>, <em>Az</em>, <em>r</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#CoarseLO"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.CoarseLO" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">linop.linop.LinearOperator</span></tt></p>
+<p>This class contains all the operation involving the coarse operator <img class="math" src="_images/math/cfd13a0f26eb7ef0093319a7669da7dd3771dbac.png" alt="E"/>.
+In this implementation <img class="math" src="_images/math/cfd13a0f26eb7ef0093319a7669da7dd3771dbac.png" alt="E"/> is always applied to a vector wiht
+its inverse : <img class="math" src="_images/math/bb40144ea459183894e80a10eb2eb2ccf16d7641.png" alt="E^{-1}"/>.
+When initialized it performs an LU decomposition to accelerate the performances
+of the inversion.</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">Z</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{np.matrix}</span></dt>
+<dd><p class="first last">deflation matrix;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">A</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{SparseLO}</span></dt>
+<dd><p class="first last">to  compute vectors <img class="math" src="_images/math/08fa4a93fd30f84b073de0e1aca74273565531a4.png" alt="AZ_i"/>;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">r</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{int}</span></dt>
+<dd><p class="first last"><img class="math" src="_images/math/f15fd4a0ae024d3f82d5ef809bdf4ad421da13a1.png" alt="rank(Z)"/>, dimension of the deflation subspace.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="method">
+<dt id="interfaces.linearoperators.CoarseLO.mult">
+<tt class="descname">mult</tt><big>(</big><em>v</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#CoarseLO.mult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.CoarseLO.mult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the multiplication of the inverse coarse operator <img class="math" src="_images/math/a20142b630f0f64020daf8f818f22ccff0af3e33.png" alt="x=E^{-1} v"/>.
+It exploits the LU decomposition of <img class="math" src="_images/math/cfd13a0f26eb7ef0093319a7669da7dd3771dbac.png" alt="E"/> to solve the system <img class="math" src="_images/math/a24ca485dd2ea61da1078b91eea0b2ae12866258.png" alt="Ex=v"/>.
+It first solves <img class="math" src="_images/math/eac85cfe297cde50f4050e0211f6339cc52fe32e.png" alt="y=L^{-1} v"/> and then <img class="math" src="_images/math/cd07e6eab6a1e0851dccfca6186cb65da06606b8.png" alt="x=U^{-1}y"/>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.linearoperators.CoarseLO.set_operator">
+<tt class="descname">set_operator</tt><big>(</big><em>Z</em>, <em>Az</em>, <em>r</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#CoarseLO.set_operator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.CoarseLO.set_operator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="interfaces.linearoperators.DeflationLO">
+<em class="property">class </em><tt class="descclassname">interfaces.linearoperators.</tt><tt class="descname">DeflationLO</tt><big>(</big><em>z</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#DeflationLO"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.DeflationLO" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">linop.linop.LinearOperator</span></tt></p>
+<p>This class builds the Deflation operator (and its transpose)
+from the columns of the matrix <tt class="docutils literal"><span class="pre">Z</span></tt>.</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">z</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{np.matrix}</span></dt>
+<dd><p class="first last">the deflation matrix. Its columns are read as arrays in a list <tt class="docutils literal"><span class="pre">self.z</span></tt>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="method">
+<dt id="interfaces.linearoperators.DeflationLO.mult">
+<tt class="descname">mult</tt><big>(</big><em>x</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#DeflationLO.mult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.DeflationLO.mult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the matrix vector multiplication   <img class="math" src="_images/math/5b63a2d3836805ea211630a66402d03308399f71.png" alt="Z x"/>
+with  <img class="math" src="_images/math/d9089ff4419c0b96c5410430cc1193ea79224e85.png" alt="dim(x) = rank(Z)"/>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.linearoperators.DeflationLO.rmult">
+<tt class="descname">rmult</tt><big>(</big><em>x</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#DeflationLO.rmult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.DeflationLO.rmult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the product onto a <tt class="docutils literal"><span class="pre">N_pix</span></tt> vector with <img class="math" src="_images/math/fce8f88de51fd12991436ec4b78f67e1b4437507.png" alt="Z^T"/>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="interfaces.linearoperators.FilterLO">
+<em class="property">class </em><tt class="descclassname">interfaces.linearoperators.</tt><tt class="descname">FilterLO</tt><big>(</big><em>size</em>, <em>subscan_nsample</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#FilterLO"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.FilterLO" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">linop.linop.LinearOperator</span></tt></p>
+<p>When applied to <img class="math" src="_images/math/6875c33c62b511caca07c9fdac6d5fba053051d0.png" alt="n_t"/> vector, this  operator filters out
+its components by removing a constant (its mean value) within a <em>subscan</em>
+interval.</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">size</span></tt>: {int}</dt>
+<dd><p class="first last">the size of the input array;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">subscan_nsample</span></tt>: {array}</dt>
+<dd><p class="first last">contains the size of each chunk of the samples which has to be processed.
+<img class="math" src="_images/math/62c78a35191f271897e0a226c4ca7190908ff7be.png" alt="\sum_i subscan_{i} = size"/>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="method">
+<dt id="interfaces.linearoperators.FilterLO.mult">
+<tt class="descname">mult</tt><big>(</big><em>d</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#FilterLO.mult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.FilterLO.mult" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="interfaces.linearoperators.InverseLO">
+<em class="property">class </em><tt class="descclassname">interfaces.linearoperators.</tt><tt class="descname">InverseLO</tt><big>(</big><em>A</em>, <em>method=None</em>, <em>preconditioner=None</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#InverseLO"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.InverseLO" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">linop.linop.LinearOperator</span></tt></p>
+<p>Construct the inverse operator of a matrix <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>, as a linear operator.</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">A</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{linear operator}</span></dt>
+<dd><p class="first last">the linear operator of the linear system to invert;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">method</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{function }</span></dt>
+<dd><p class="first last">the method to compute <tt class="docutils literal"><span class="pre">A^-1</span></tt> (see below);</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">P</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{linear operator } (optional)</span></dt>
+<dd><p class="first last">the preconditioner for the computation of the inverse operator.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="attribute">
+<dt id="interfaces.linearoperators.InverseLO.converged">
+<tt class="descname">converged</tt><a class="reference internal" href="_modules/interfaces/linearoperators.html#InverseLO.converged"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.InverseLO.converged" title="Permalink to this definition">¶</a></dt>
+<dd><p>provides convergence information:</p>
+<ul class="simple">
+<li>0 : successful exit;</li>
+<li>&gt;0 : convergence to tolerance not achieved, number of iterations;</li>
+<li>&lt;0 : illegal input or breakdown.</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.linearoperators.InverseLO.isconverged">
+<tt class="descname">isconverged</tt><big>(</big><em>info</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#InverseLO.isconverged"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.InverseLO.isconverged" title="Permalink to this definition">¶</a></dt>
+<dd><p>It returns a Boolean value  depending on the
+exit status of the solver.</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">info</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{int}</span></dt>
+<dd><p class="first last">output of the solver method (usually <tt class="xref py py-func docutils literal"><span class="pre">scipy.sparse.cg()</span></tt>).</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="interfaces.linearoperators.InverseLO.method">
+<tt class="descname">method</tt><a class="reference internal" href="_modules/interfaces/linearoperators.html#InverseLO.method"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.InverseLO.method" title="Permalink to this definition">¶</a></dt>
+<dd><p>The method to compute the inverse of A.         It can be any <tt class="xref py py-mod docutils literal"><span class="pre">scipy.sparse.linalg</span></tt> solver, namely <tt class="xref py py-func docutils literal"><span class="pre">scipy.sparse.linalg.cg()</span></tt>,
+<tt class="xref py py-func docutils literal"><span class="pre">scipy.sparse.linalg.bicg()</span></tt>, etc.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.linearoperators.InverseLO.mult">
+<tt class="descname">mult</tt><big>(</big><em>x</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#InverseLO.mult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.InverseLO.mult" title="Permalink to this definition">¶</a></dt>
+<dd><p>It returns  <img class="math" src="_images/math/c8a039953137d9096b91497eadc6f4097f8b15cb.png" alt="y=A^{-1}x"/> by solving the linear system <img class="math" src="_images/math/33e0c1e198e36791743860bdd8a7624c8c2ad141.png" alt="Ay=x"/>
+with a certain <tt class="xref py py-mod docutils literal"><span class="pre">scipy</span></tt> routine (e.g. <tt class="xref py py-func docutils literal"><span class="pre">scipy.sparse.linalg.cg()</span></tt>)
+defined above as <tt class="docutils literal"><span class="pre">method</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="interfaces.linearoperators.InverseLO.preconditioner">
+<tt class="descname">preconditioner</tt><a class="reference internal" href="_modules/interfaces/linearoperators.html#InverseLO.preconditioner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.InverseLO.preconditioner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Preconditioner for the solver.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="interfaces.linearoperators.SparseLO">
+<em class="property">class </em><tt class="descclassname">interfaces.linearoperators.</tt><tt class="descname">SparseLO</tt><big>(</big><em>n</em>, <em>m</em>, <em>obs_pixs</em>, <em>phi=None</em>, <em>pol=1</em>, <em>w=None</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#SparseLO"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.SparseLO" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">linop.linop.LinearOperator</span></tt></p>
+<p>Derived class from the one from the  <tt class="xref py py-class docutils literal"><span class="pre">LinearOperator</span></tt> in <tt class="xref py py-mod docutils literal"><span class="pre">linop</span></tt>.
+It constitutes an interface for dealing with the projection operator
+(pointing matrix).</p>
+<p>Since this can be represented as a sparse matrix, it is initialized     by an array of observed pixels which resembles the  <tt class="docutils literal"><span class="pre">(i,j)</span></tt> positions     of the non-null elements of  the matrix,``obs_pixs``.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">During its initialization,  a private member function <a class="reference internal" href="#interfaces.linearoperators.SparseLO.initializeweights" title="interfaces.linearoperators.SparseLO.initializeweights"><tt class="xref py py-func docutils literal"><span class="pre">initializeweights()</span></tt></a> is called
+to precompute arrays needed for the explicit implementation of
+<tt class="xref py py-class docutils literal"><span class="pre">interfaces.BlockDiagonalPreconditionerLO</span></tt>.</p>
+</div>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">n</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{int}</span></dt>
+<dd><p class="first last">number of columns;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">m</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{int}</span></dt>
+<dd><p class="first last">number of rows;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">obs_pixs</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{array}</span></dt>
+<dd><p class="first last">pixels index <tt class="docutils literal"><span class="pre">j</span></tt> of the non-null elements of <img class="math" src="_images/math/bb6c6c97d391e46320213fa3786fd8e8198c0ee5.png" alt="A_{i,j}"/>;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">pol</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{int,[<em>default</em> <cite>pol=1</cite>]}</span></dt>
+<dd><dl class="first last docutils">
+<dt>process an intensity only (<tt class="docutils literal"><span class="pre">pol=1</span></tt>), polarization only <tt class="docutils literal"><span class="pre">pol=2</span></tt></dt>
+<dd><p class="first last">and intensity+polarization map (<tt class="docutils literal"><span class="pre">pol=3</span></tt>);</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>phi</cite>: {array, [<em>default</em> <cite>None</cite>]}</dt>
+<dd><p class="first last">array with polarization angles (if <tt class="docutils literal"><span class="pre">pol=3,2</span></tt>).</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">w</span></tt>: {array, [<em>default</em> <cite>None</cite>]}</dt>
+<dd><p class="first last">array with noise weights , <img class="math" src="_images/math/3ce64a6e59d51c6f610156613f971d93118240e9.png" alt="w_t= N^{-1} _{tt}"/>, computed by
+<a class="reference internal" href="#interfaces.linearoperators.BlockLO.build_blocks" title="interfaces.linearoperators.BlockLO.build_blocks"><tt class="xref py py-func docutils literal"><span class="pre">BlockLO.build_blocks()</span></tt></a>.   If it is  not set <a class="reference internal" href="#interfaces.linearoperators.SparseLO.initializeweights" title="interfaces.linearoperators.SparseLO.initializeweights"><tt class="xref py py-func docutils literal"><span class="pre">SparseLO.initializeweights()</span></tt></a>
+assumes it to be a <tt class="xref py py-func docutils literal"><span class="pre">numpy.ones()</span></tt> array.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="method">
+<dt id="interfaces.linearoperators.SparseLO.initializeweights">
+<tt class="descname">initializeweights</tt><big>(</big><em>phi</em>, <em>w</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#SparseLO.initializeweights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.SparseLO.initializeweights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pre-compute the quantitities needed in the explicit
+implementation of <img class="math" src="_images/math/c8a06c4bce275bd05ed8e6defc6df65420f4f14b.png" alt="(A^T A)"/>:</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">counts</span></tt> :</dt>
+<dd><p class="first last">how many times a given pixel is observed in the timestream;</p>
+</dd>
+</dl>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">mask</span></tt>:
+mask from  either unobserved pixels (<tt class="docutils literal"><span class="pre">counts=0</span></tt>)  or   bad constrained
+(see the <tt class="docutils literal"><span class="pre">pol=3,2</span></tt> following cases) ;</p>
+</li>
+<li><dl class="first docutils">
+<dt><em>If</em> <tt class="docutils literal"><span class="pre">pol=2</span></tt>:</dt>
+<dd><p class="first">the matrix <img class="math" src="_images/math/c8a06c4bce275bd05ed8e6defc6df65420f4f14b.png" alt="(A^T A)"/>  is  symmetric and block-diagonal, each block
+can be written as :</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><img class="math" src="_images/math/d8b29e9305d7fcfda789df8da2ac13521a659cad.png" alt="\sum_t cos^2 2 \phi_t"/></td>
+<td><img class="math" src="_images/math/3060b5f7d7a0ac1897856a1fdd7a161493727443.png" alt="\sum_t sin 2\phi_t cos 2 \phi_t"/></td>
+</tr>
+<tr class="row-even"><td><img class="math" src="_images/math/206a2f85c77a397f5ac77196640b952c50031442.png" alt="\sum_t sin2 \phi_t cos 2 \phi_t"/></td>
+<td><img class="math" src="_images/math/be415ed136f2de37abd087414e731e913a6af57c.png" alt="\sum_t sin^2 2 \phi_t"/></td>
+</tr>
+</tbody>
+</table>
+<p>the determinant, the trace are therefore needed to compute the  eigenvalues
+of each block via the formula:</p>
+<div class="math">
+<p><img src="_images/math/e7cea9cc2a4a239991dcaa2b2c0f4889305afbfb.png" alt="\lambda_{min,max}= Tr(M)/2 \pm \sqrt{Tr^2(M)/4 - det(M)}"/></p>
+</div><p class="last">being <img class="math" src="_images/math/2de38926392ba23abeac75effc66c37a5f5be5fd.png" alt="M"/> a <tt class="docutils literal"><span class="pre">2x2</span></tt> matrix.
+The eigenvalues are needed to define the mask of bad constrained pixels whose
+condition number is <img class="math" src="_images/math/1052787205e388519514e815e61f9655f853f384.png" alt="\gg 1"/>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>[<em>If</em>  <tt class="docutils literal"><span class="pre">pol=3</span></tt>]:</dt>
+<dd><p class="first">each block of the matrix <img class="math" src="_images/math/c8a06c4bce275bd05ed8e6defc6df65420f4f14b.png" alt="(A^T A)"/>  is a <tt class="docutils literal"><span class="pre">3</span> <span class="pre">x</span> <span class="pre">3</span></tt> matrix:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><img class="math" src="_images/math/07226b444ba870c888199e1e88b19de1d8be0d3c.png" alt="n_{hits}"/></td>
+<td><img class="math" src="_images/math/6b429be869448af28fa61011b821e695ec4c7635.png" alt="\sum_t cos 2 \phi_t"/></td>
+<td><img class="math" src="_images/math/573bcf3727483021e5a9f5dafc5d32800bc6e40a.png" alt="\sum_t sin 2 \phi_t"/></td>
+</tr>
+<tr class="row-even"><td><img class="math" src="_images/math/6b429be869448af28fa61011b821e695ec4c7635.png" alt="\sum_t cos 2 \phi_t"/></td>
+<td><img class="math" src="_images/math/d8b29e9305d7fcfda789df8da2ac13521a659cad.png" alt="\sum_t cos^2 2 \phi_t"/></td>
+<td><img class="math" src="_images/math/3060b5f7d7a0ac1897856a1fdd7a161493727443.png" alt="\sum_t sin 2\phi_t cos 2 \phi_t"/></td>
+</tr>
+<tr class="row-odd"><td><img class="math" src="_images/math/573bcf3727483021e5a9f5dafc5d32800bc6e40a.png" alt="\sum_t sin 2 \phi_t"/></td>
+<td><img class="math" src="_images/math/206a2f85c77a397f5ac77196640b952c50031442.png" alt="\sum_t sin2 \phi_t cos 2 \phi_t"/></td>
+<td><img class="math" src="_images/math/be415ed136f2de37abd087414e731e913a6af57c.png" alt="\sum_t sin^2 2 \phi_t"/></td>
+</tr>
+</tbody>
+</table>
+<p class="last">We then define the mask of bad constrained pixels by both  considering
+the condition number similarly as in the <tt class="docutils literal"><span class="pre">pol=2</span></tt> case and the pixels
+whose count is <img class="math" src="_images/math/c05eab9458ae4784839c8e8fa266e5641f55177b.png" alt="\geq 3"/>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="interfaces.linearoperators.SparseLO.maptype">
+<tt class="descname">maptype</tt><a class="reference internal" href="_modules/interfaces/linearoperators.html#SparseLO.maptype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.SparseLO.maptype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string depending on the map you are processing</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.linearoperators.SparseLO.mult">
+<tt class="descname">mult</tt><big>(</big><em>v</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#SparseLO.mult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.SparseLO.mult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the product of a sparse matrix <img class="math" src="_images/math/766bb2f1fa45aedd85e8abdfa780a6697b60fb7b.png" alt="Av"/>,         with <img class="math" src="_images/math/0e22076955898e6c9bb38aa079135195c24dc81e.png" alt="v"/> a  <tt class="xref py py-mod docutils literal"><span class="pre">numpy</span></tt>  array (<img class="math" src="_images/math/4915f97c4f6265018b27c9fea3c8dd5f61a1f03d.png" alt="dim(v)=n_{pix}"/>)  .</p>
+<p>It extracts the components of <img class="math" src="_images/math/0e22076955898e6c9bb38aa079135195c24dc81e.png" alt="v"/> corresponding  to the non-null         elements of the operator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.linearoperators.SparseLO.mult_iqu">
+<tt class="descname">mult_iqu</tt><big>(</big><em>v</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#SparseLO.mult_iqu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.SparseLO.mult_iqu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the product of a sparse matrix <img class="math" src="_images/math/766bb2f1fa45aedd85e8abdfa780a6697b60fb7b.png" alt="Av"/>,        with <tt class="docutils literal"><span class="pre">v</span></tt> a  <tt class="xref py py-mod docutils literal"><span class="pre">numpy</span></tt> array containing the
+three Stokes parameters [IQU] .</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Compared to the operation <tt class="docutils literal"><span class="pre">mult</span></tt> this routine returns a
+<img class="math" src="_images/math/6875c33c62b511caca07c9fdac6d5fba053051d0.png" alt="n_t"/>-size vector defined as:</p>
+<div class="math">
+<p><img src="_images/math/2f6ea105a69bf5e43c054f6cc09da80810e38d00.png" alt="d_t= I_p + Q_p \cos(2\phi_t)+ U_p \sin(2\phi_t)."/></p>
+</div><p class="last">with <img class="math" src="_images/math/3eca8557203e86160952e1c0f735f7417f3285b1.png" alt="p"/> is the pixel observed at time <img class="math" src="_images/math/ef9270877405055756d345facd044e4ab297f858.png" alt="t"/> with polarization angle
+<img class="math" src="_images/math/3588a9dea23e283c96db9db51a2eca4501185724.png" alt="\phi_t"/>.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.linearoperators.SparseLO.mult_qu">
+<tt class="descname">mult_qu</tt><big>(</big><em>v</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#SparseLO.mult_qu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.SparseLO.mult_qu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs <img class="math" src="_images/math/143940059a39e91667683563f29cf9249e2bcd96.png" alt="A * v"/> with <img class="math" src="_images/math/0e22076955898e6c9bb38aa079135195c24dc81e.png" alt="v"/> being a <em>polarization</em> vector.
+The output array will encode a linear combination of the two Stokes
+parameters,  (whose components are stored contiguously).</p>
+<div class="math">
+<p><img src="_images/math/7ed244621870cc474edbbd271a066740c388f007.png" alt="d_t=  Q_p \cos(2\phi_t)+ U_p \sin(2\phi_t)."/></p>
+</div></dd></dl>
+
+<dl class="method">
+<dt id="interfaces.linearoperators.SparseLO.rmult">
+<tt class="descname">rmult</tt><big>(</big><em>v</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#SparseLO.rmult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.SparseLO.rmult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the product for the transpose operator <img class="math" src="_images/math/38f39fe7579d655483e0e99ac07d15e1a51d4fb2.png" alt="A^T"/>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.linearoperators.SparseLO.rmult_iqu">
+<tt class="descname">rmult_iqu</tt><big>(</big><em>v</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#SparseLO.rmult_iqu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.SparseLO.rmult_iqu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the product for the transpose operator <img class="math" src="_images/math/38f39fe7579d655483e0e99ac07d15e1a51d4fb2.png" alt="A^T"/> to get a IQU map-like vector.
+Since this vector resembles the pixel of 3 maps it has 3 times the size <tt class="docutils literal"><span class="pre">Npix</span></tt>.
+IQU values referring to the same pixel are  contiguously stored in the memory.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.linearoperators.SparseLO.rmult_qu">
+<tt class="descname">rmult_qu</tt><big>(</big><em>v</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#SparseLO.rmult_qu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.SparseLO.rmult_qu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs <img class="math" src="_images/math/adb547c58da0d20c90c7a8a2094a274878a7b2ad.png" alt="A^T * v"/>. The output vector will be a QU-map-like array.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="interfaces.linearoperators.ToeplitzLO">
+<em class="property">class </em><tt class="descclassname">interfaces.linearoperators.</tt><tt class="descname">ToeplitzLO</tt><big>(</big><em>a</em>, <em>size</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#ToeplitzLO"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.ToeplitzLO" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">linop.linop.LinearOperator</span></tt></p>
+<p>Derived Class from a LinearOperator. It exploit the symmetries of an <tt class="docutils literal"><span class="pre">dim</span> <span class="pre">x</span> <span class="pre">dim</span></tt>
+Toeplitz matrix.
+This particular kind of matrices satisfy the following relation:</p>
+<div class="math">
+<p><img src="_images/math/c56cac403501a743f4c2e4412bc46e7b8ffa6d83.png" alt="A_{i,j}=A_{i+1,j+1}=a_{i-j}"/></p>
+</div><p>Therefore, it is enough to initialize <tt class="docutils literal"><span class="pre">A</span></tt> by mean of an array <tt class="docutils literal"><span class="pre">a</span></tt> of <tt class="docutils literal"><span class="pre">size</span> <span class="pre">=</span> <span class="pre">dim</span></tt>.</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">a</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{array, list}</span></dt>
+<dd><p class="first last">the array which resembles all the elements of the Toeplitz matrix;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">size</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{int}</span></dt>
+<dd><p class="first last">size of the block.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="method">
+<dt id="interfaces.linearoperators.ToeplitzLO.mult">
+<tt class="descname">mult</tt><big>(</big><em>v</em><big>)</big><a class="reference internal" href="_modules/interfaces/linearoperators.html#ToeplitzLO.mult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.linearoperators.ToeplitzLO.mult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the product of a Toeplitz matrix with a vector <tt class="docutils literal"><span class="pre">x</span></tt>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-interfaces">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-interfaces" title="Permalink to this headline">¶</a></h2>
+<p>This module contains the 2 main libraries for <tt class="docutils literal"><span class="pre">COSMOMAP2</span></tt></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+        </div>
+        <div class="sidebar">
+          <h3>Table Of Contents</h3>
+          <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Modules</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="">interfaces package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities.html">utilities package</a></li>
+</ul>
+</li>
+</ul>
+
+          <h3 style="margin-top: 1.5em;">Search</h3>
+          <form class="search" action="search.html" method="get">
+            <input type="text" name="q" />
+            <input type="submit" value="Go" />
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+          </form>
+          <p class="searchtip" style="font-size: 90%">
+            Enter search terms or a module, class or function name.
+          </p>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+    <div class="footer-wrapper">
+      <div class="footer">
+        <div class="left">
+          <a href="modules.html" title="Modules"
+             >previous</a> |
+          <a href="utilities.html" title="utilities package"
+             >next</a> |
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |
+          <a href="genindex.html" title="General Index"
+             >index</a>
+            <br/>
+            <a href="_sources/interfaces.txt"
+               rel="nofollow">Show Source</a>
+        </div>
+
+        <div class="right">
+          
+    <div class="footer">
+        &copy; Copyright 2015, Giuseppe Puglisi.
+      Last updated on Jan 31, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+  </body>
+</html>
