@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>interfaces.linearoperators &mdash; COSmic Microwave background linear Operators MAp-making Preconditioner 0 documentation</title>
+    <title>interfaces.linearoperators &mdash; COSmic Microwave Operators MAp-making Preconditioner 0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/agogo.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -23,14 +23,14 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="COSmic Microwave background linear Operators MAp-making Preconditioner 0 documentation" href="../../index.html" />
+    <link rel="top" title="COSmic Microwave Operators MAp-making Preconditioner 0 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" /> 
   </head>
   <body>
     <div class="header-wrapper">
       <div class="header">
         <div class="headertitle"><a
-          href="../../index.html">COSmic Microwave background linear Operators MAp-making Preconditioner 0 documentation</a></div>
+          href="../../index.html">COSmic Microwave Operators MAp-making Preconditioner 0 documentation</a></div>
         <div class="rel">
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |
@@ -54,6 +54,8 @@
 <span class="kn">import</span> <span class="nn">linop.linop</span> <span class="kn">as</span> <span class="nn">lp</span>
 <span class="kn">import</span> <span class="nn">blkop</span> <span class="kn">as</span> <span class="nn">blk</span>
 <span class="kn">import</span> <span class="nn">random</span> <span class="kn">as</span> <span class="nn">rd</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">weave</span>
+<span class="kn">from</span> <span class="nn">scipy.weave</span> <span class="kn">import</span> <span class="n">inline</span>
 <span class="kn">import</span> <span class="nn">scipy.sparse.linalg</span> <span class="kn">as</span> <span class="nn">spla</span>
 <span class="kn">from</span> <span class="nn">utilities</span> <span class="kn">import</span> <span class="o">*</span>
 
@@ -70,6 +72,15 @@
 <span class="sd">    - ``subscan_nsample``: {array}</span>
 <span class="sd">        contains the size of each chunk of the samples which has to be processed.</span>
 <span class="sd">        :math:`\sum_i subscan_{i} = size`.</span>
+<span class="sd">    - ``pix_samples``: {array}</span>
+<span class="sd">        the same argument as in :class:`SparseLO`, encoding all the pixels observed</span>
+<span class="sd">        during observations.</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        To be consistent with tha analysis :class:`FilterLO` does not take into account</span>
+<span class="sd">        all the flagged pixels.</span>
+
 
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="FilterLO.mult"><a class="viewcode-back" href="../../interfaces.html#interfaces.linearoperators.FilterLO.mult">[docs]</a>    <span class="k">def</span> <span class="nf">mult</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">d</span><span class="p">):</span>
@@ -80,13 +91,43 @@
                 <span class="n">start</span><span class="o">=</span><span class="n">offset</span>
                 <span class="n">end</span><span class="o">=</span><span class="n">start</span> <span class="o">+</span> <span class="n">i</span>
                 <span class="n">offset</span><span class="o">+=</span><span class="n">i</span>
-                <span class="n">vec_out</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span> <span class="p">]</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">])</span>
+                <span class="n">pixs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pixels</span>
+                <span class="n">code</span> <span class="o">=</span> <span class="s">r&quot;&quot;&quot;</span>
+<span class="s">        	    int j;</span>
+<span class="s">                double mean=0.;</span>
+<span class="s">                double counter=0.;</span>
+<span class="s">                int tstart=start;</span>
+<span class="s">                int tend=end;</span>
+<span class="s">                for (j=tstart;j &lt; tend;++j){</span>
+<span class="s">                    if (pixs(j) == -1){</span>
+<span class="s">                        //printf(&quot;Skip \n&quot;);</span>
+<span class="s">                        continue;</span>
+<span class="s">                    }</span>
+<span class="s">                    mean+= d(j);</span>
+<span class="s">                    counter+=1.;</span>
+<span class="s">                    }</span>
+<span class="s">                mean=mean/ counter;</span>
+<span class="s">                //printf(&quot;</span><span class="si">%g</span><span class="s">\t </span><span class="si">%g</span><span class="s">\n&quot;,mean,counter);</span>
+<span class="s">                return_val=mean;</span>
+<span class="s">                &quot;&quot;&quot;</span>
+                <span class="n">dmean</span> <span class="o">=</span> <span class="n">inline</span><span class="p">(</span><span class="n">code</span><span class="p">,[</span><span class="s">&#39;pixs&#39;</span><span class="p">,</span><span class="s">&#39;d&#39;</span><span class="p">,</span><span class="s">&#39;start&#39;</span><span class="p">,</span><span class="s">&#39;end&#39;</span><span class="p">],</span><span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        		      <span class="n">extra_compile_args</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;-march=native &#39;</span> <span class="p">],</span>
+        		            <span class="n">support_code</span> <span class="o">=</span> <span class="s">r&quot;&quot;&quot;</span>
+<span class="s">        	                   #include &lt;stdio.h&gt;</span>
+<span class="s">        	                   #include &lt;math.h&gt;&quot;&quot;&quot;</span><span class="p">,</span>
+                               <span class="n">type_converters</span><span class="o">=</span><span class="n">weave</span><span class="o">.</span><span class="n">converters</span><span class="o">.</span><span class="n">blitz</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">dmean</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">dmean</span><span class="p">):</span>
+                    <span class="k">continue</span>
+
+                <span class="c">#vec_out[start:end ]=d[start:end] - np.mean(d[start:end])</span>
+                <span class="n">vec_out</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span> <span class="p">]</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span> <span class="o">-</span> <span class="n">dmean</span>
 
         <span class="k">return</span> <span class="n">vec_out</span>
 </div>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">size</span><span class="p">,</span><span class="n">subscan_nsample</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">size</span><span class="p">,</span><span class="n">subscan_nsample</span><span class="p">,</span> <span class="n">pix_samples</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="o">=</span><span class="n">size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">chunks</span><span class="o">=</span><span class="n">subscan_nsample</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pixels</span><span class="o">=</span><span class="n">pix_samples</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">FilterLO</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">nargin</span><span class="o">=</span><span class="n">size</span><span class="p">,</span><span class="n">nargout</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">matvec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mult</span><span class="p">,</span>
                                                 <span class="n">symmetric</span><span class="o">=</span><span class="bp">False</span> <span class="p">)</span>
 </div>
@@ -102,10 +143,10 @@
 
 <span class="sd">    .. note::</span>
 
-<span class="sd">        During its initialization,  a private member function :func:`initializeweights` is called</span>
-<span class="sd">        to precompute arrays needed for the explicit implementation of</span>
-<span class="sd">        :class:`interfaces.BlockDiagonalPreconditionerLO`.</span>
-
+<span class="sd">        During its initialization,  a private member function :func:`initializeweights`</span>
+<span class="sd">        is called to precompute arrays needed for the explicit implementation of :class:`BlockDiagonalPreconditionerLO`.</span>
+<span class="sd">        Moreover it masks all the unobserved or pathological pixels which won&#39;t be taken into account, via the functions</span>
+<span class="sd">        :func:`repixelization`  and   :func:`flagging_samples`.</span>
 
 <span class="sd">    **Parameters**</span>
 
@@ -113,17 +154,26 @@
 <span class="sd">        number of columns;</span>
 <span class="sd">    - ``m`` : {int}</span>
 <span class="sd">        number of rows;</span>
-<span class="sd">    - ``obs_pixs`` : {array}</span>
-<span class="sd">         pixels index ``j`` of the non-null elements of :math:`A_{i,j}`;</span>
+<span class="sd">    - ``pix_samples`` : {array}</span>
+<span class="sd">        list of pixels observed in the time domain,</span>
+<span class="sd">        (or the non-null elements in a row of :math:`A_{i,j}`);</span>
 <span class="sd">    - ``pol`` : {int,[*default* `pol=1`]}</span>
 <span class="sd">        process an intensity only (``pol=1``), polarization only ``pol=2``</span>
-<span class="sd">         and intensity+polarization map (``pol=3``);</span>
-<span class="sd">    - `phi`: {array, [*default* `None`]}</span>
-<span class="sd">        array with polarization angles (if ``pol=3,2``).</span>
+<span class="sd">        and intensity+polarization map (``pol=3``);</span>
+<span class="sd">    - ``phi``: {array, [*default* `None`]}</span>
+<span class="sd">        array with polarization angles (needed if ``pol=3,2``);</span>
 <span class="sd">    - ``w``: {array, [*default* `None`]}</span>
 <span class="sd">        array with noise weights , :math:`w_t= N^{-1} _{tt}`, computed by</span>
 <span class="sd">        :func:`BlockLO.build_blocks`.   If it is  not set :func:`SparseLO.initializeweights`</span>
-<span class="sd">        assumes it to be a :func:`numpy.ones` array.</span>
+<span class="sd">        assumes it to be a :func:`numpy.ones` array;</span>
+<span class="sd">    - ``pixel_schema``:{array}</span>
+<span class="sd">        Map from the internal pixelization to an external one, i.e. HEALPIX, it has to be modified when</span>
+<span class="sd">        pathological pixels are not taken into account;</span>
+<span class="sd">        Default is :func:`numpy.arange(npix)`, i.e. identity map;</span>
+<span class="sd">    - ``threshold_cond``: {float}</span>
+<span class="sd">        set the condition number threshold to mask bad conditioned pixels (it&#39;s used in polarization cases).</span>
+<span class="sd">        Default is set to 1.e3.</span>
+
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -137,19 +187,45 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nrows</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndenumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pairs</span><span class="p">):</span>
-            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+=</span><span class="n">v</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
-
-        <span class="k">return</span> <span class="n">x</span>
-</div>
+        <span class="n">Nrows</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nrows</span>
+        <span class="n">pixs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pairs</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="s">r&quot;&quot;&quot;</span>
+<span class="s">	    int i;</span>
+<span class="s">        for (i=0;i&lt;Nrows;++i){</span>
+<span class="s">            if (pixs(i) == -1) continue;</span>
+<span class="s">            x(i)+= v(pixs(i));</span>
+<span class="s">            }</span>
+<span class="s">        &quot;&quot;&quot;</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">inline</span><span class="p">(</span><span class="n">code</span><span class="p">,[</span><span class="s">&#39;pixs&#39;</span><span class="p">,</span><span class="s">&#39;v&#39;</span><span class="p">,</span><span class="s">&#39;x&#39;</span><span class="p">,</span><span class="s">&#39;Nrows&#39;</span><span class="p">],</span><span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+		      <span class="n">extra_compile_args</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;-march=native  -O3  -fopenmp &#39;</span> <span class="p">],</span>
+		            <span class="n">support_code</span> <span class="o">=</span> <span class="s">r&quot;&quot;&quot;</span>
+<span class="s">	                   #include &lt;stdio.h&gt;</span>
+<span class="s">                       #include &lt;omp.h&gt;</span>
+<span class="s">	                   #include &lt;math.h&gt;&quot;&quot;&quot;</span><span class="p">,</span>
+                       <span class="n">libraries</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;gomp&#39;</span><span class="p">],</span><span class="n">type_converters</span><span class="o">=</span><span class="n">weave</span><span class="o">.</span><span class="n">converters</span><span class="o">.</span><span class="n">blitz</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span></div>
 <div class="viewcode-block" id="SparseLO.rmult"><a class="viewcode-back" href="../../interfaces.html#interfaces.linearoperators.SparseLO.rmult">[docs]</a>    <span class="k">def</span> <span class="nf">rmult</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Performs the product for the transpose operator :math:`A^T`.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndenumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pairs</span><span class="p">):</span>
-            <span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">+=</span><span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">Nrows</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nrows</span>
+        <span class="n">pixs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pairs</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="s">r&quot;&quot;&quot;</span>
+<span class="s">	       int i ;</span>
+<span class="s">           for ( i=0;i&lt;Nrows;++i){</span>
+<span class="s">            if (pixs(i) == -1) continue;</span>
+<span class="s">            x(pixs(i))+=v(i);</span>
+<span class="s">            }</span>
+<span class="s">        &quot;&quot;&quot;</span>
+        <span class="n">inline</span><span class="p">(</span><span class="n">code</span><span class="p">,[</span><span class="s">&#39;pixs&#39;</span><span class="p">,</span><span class="s">&#39;v&#39;</span><span class="p">,</span><span class="s">&#39;x&#39;</span><span class="p">,</span><span class="s">&#39;Nrows&#39;</span><span class="p">],</span><span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+		      <span class="n">extra_compile_args</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;-march=native  -O3  -fopenmp &#39;</span> <span class="p">],</span>
+		            <span class="n">support_code</span> <span class="o">=</span> <span class="s">r&quot;&quot;&quot;</span>
+<span class="s">	                   #include &lt;stdio.h&gt;</span>
+<span class="s">                       #include &lt;omp.h&gt;</span>
+<span class="s">	                   #include &lt;math.h&gt;&quot;&quot;&quot;</span><span class="p">,</span>
+                       <span class="n">libraries</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;gomp&#39;</span><span class="p">],</span><span class="n">type_converters</span><span class="o">=</span><span class="n">weave</span><span class="o">.</span><span class="n">converters</span><span class="o">.</span><span class="n">blitz</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">x</span></div>
 <div class="viewcode-block" id="SparseLO.mult_qu"><a class="viewcode-back" href="../../interfaces.html#interfaces.linearoperators.SparseLO.mult_qu">[docs]</a>    <span class="k">def</span> <span class="nf">mult_qu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
@@ -162,22 +238,48 @@
 <span class="sd">            d_t=  Q_p \cos(2\phi_t)+ U_p \sin(2\phi_t).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nrows</span><span class="p">)</span>
-        <span class="n">indices</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nrows</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="s">&#39;int32&#39;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">index</span><span class="p">,</span><span class="n">pix</span><span class="p">,</span><span class="n">cos</span><span class="p">,</span><span class="n">sin</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">pairs</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">cos</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sin</span><span class="p">):</span>
-            <span class="n">x</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">+=</span><span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">pix</span><span class="p">]</span><span class="o">*</span><span class="n">cos</span><span class="o">+</span><span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">pix</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">sin</span>
-        <span class="k">return</span> <span class="n">x</span>
-</div>
+        <span class="n">Nrows</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nrows</span>
+        <span class="n">pixs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pairs</span>
+        <span class="n">cos</span><span class="p">,</span><span class="n">sin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cos</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sin</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">	       int i ;</span>
+<span class="s">           for ( i=0;i&lt;Nrows;++i){</span>
+<span class="s">            if (pixs(i) == -1) continue;</span>
+<span class="s">            x(i)+=v(2*pixs(i)) *cos(i) + v(2*pixs(i)+1) *sin(i);</span>
+<span class="s">            }</span>
+<span class="s">        &quot;&quot;&quot;</span>
+        <span class="n">inline</span><span class="p">(</span><span class="n">code</span><span class="p">,[</span><span class="s">&#39;pixs&#39;</span><span class="p">,</span><span class="s">&#39;v&#39;</span><span class="p">,</span><span class="s">&#39;x&#39;</span><span class="p">,</span><span class="s">&#39;Nrows&#39;</span><span class="p">,</span><span class="s">&#39;cos&#39;</span><span class="p">,</span><span class="s">&#39;sin&#39;</span><span class="p">],</span><span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+		      <span class="n">extra_compile_args</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;-march=native  -O3  -fopenmp &#39;</span> <span class="p">],</span>
+		      <span class="n">support_code</span> <span class="o">=</span> <span class="s">r&quot;&quot;&quot;</span>
+<span class="s">	               #include &lt;stdio.h&gt;</span>
+<span class="s">                   #include &lt;omp.h&gt;</span>
+<span class="s">	               #include &lt;math.h&gt;&quot;&quot;&quot;</span><span class="p">,</span>
+              <span class="n">libraries</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;gomp&#39;</span><span class="p">],</span><span class="n">type_converters</span><span class="o">=</span><span class="n">weave</span><span class="o">.</span><span class="n">converters</span><span class="o">.</span><span class="n">blitz</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span></div>
 <div class="viewcode-block" id="SparseLO.rmult_qu"><a class="viewcode-back" href="../../interfaces.html#interfaces.linearoperators.SparseLO.rmult_qu">[docs]</a>    <span class="k">def</span> <span class="nf">rmult_qu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Performs :math:`A^T * v`. The output vector will be a QU-map-like array.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">vec_out</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">pol</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">vec_in</span><span class="p">,</span><span class="n">pix</span><span class="p">,</span><span class="n">cos</span><span class="p">,</span><span class="n">sin</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">pairs</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">cos</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sin</span><span class="p">):</span>
-            <span class="n">vec_out</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">pix</span><span class="p">]</span><span class="o">+=</span><span class="n">vec_in</span><span class="o">*</span> <span class="n">cos</span>
-            <span class="n">vec_out</span><span class="p">[</span><span class="mi">1</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">pix</span><span class="p">]</span><span class="o">+=</span><span class="n">vec_in</span><span class="o">*</span><span class="n">sin</span>
-        <span class="k">return</span> <span class="n">vec_out</span>
-
-</div>
+        <span class="n">vec_out</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">pol</span><span class="p">)</span>
+        <span class="n">Nrows</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nrows</span>
+        <span class="n">pixs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pairs</span>
+        <span class="n">cos</span><span class="p">,</span><span class="n">sin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cos</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sin</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">	       int i;</span>
+<span class="s">           for ( i=0;i&lt;Nrows;++i){</span>
+<span class="s">            if (pixs(i) == -1) continue;</span>
+<span class="s">            vec_out(2*pixs(i)) += v(i)*cos(i);</span>
+<span class="s">            vec_out(2*pixs(i)+1) += v(i)*sin(i);</span>
+<span class="s">            }</span>
+<span class="s">        &quot;&quot;&quot;</span>
+        <span class="n">inline</span><span class="p">(</span><span class="n">code</span><span class="p">,[</span><span class="s">&#39;pixs&#39;</span><span class="p">,</span><span class="s">&#39;v&#39;</span><span class="p">,</span><span class="s">&#39;vec_out&#39;</span><span class="p">,</span><span class="s">&#39;Nrows&#39;</span><span class="p">,</span><span class="s">&#39;cos&#39;</span><span class="p">,</span><span class="s">&#39;sin&#39;</span><span class="p">],</span><span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+		      <span class="n">extra_compile_args</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;-march=native  -O3  -fopenmp &#39;</span> <span class="p">],</span>
+		      <span class="n">support_code</span> <span class="o">=</span> <span class="s">r&quot;&quot;&quot;</span>
+<span class="s">	               #include &lt;stdio.h&gt;</span>
+<span class="s">                   #include &lt;omp.h&gt;</span>
+<span class="s">	               #include &lt;math.h&gt;&quot;&quot;&quot;</span><span class="p">,</span>
+              <span class="n">libraries</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;gomp&#39;</span><span class="p">],</span><span class="n">type_converters</span><span class="o">=</span><span class="n">weave</span><span class="o">.</span><span class="n">converters</span><span class="o">.</span><span class="n">blitz</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vec_out</span></div>
 <div class="viewcode-block" id="SparseLO.mult_iqu"><a class="viewcode-back" href="../../interfaces.html#interfaces.linearoperators.SparseLO.mult_iqu">[docs]</a>    <span class="k">def</span> <span class="nf">mult_iqu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Performs the product of a sparse matrix :math:`Av`,\</span>
@@ -195,13 +297,24 @@
 <span class="sd">            :math:`\phi_t`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nrows</span><span class="p">)</span>
-        <span class="n">indices</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nrows</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="s">&#39;int32&#39;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">pix</span><span class="p">,</span><span class="n">cos</span><span class="p">,</span><span class="n">sin</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">pairs</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">cos</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sin</span><span class="p">):</span>
-        <span class="c">#x[i]+=v[3*pix+1]*self.cos[i]+v[3*pix+2]*self.sin[i]</span>
-            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+=</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="p">]</span><span class="o">+</span><span class="n">v</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">cos</span> <span class="o">+</span> <span class="n">v</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">sin</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">x</span>
-</div>
+        <span class="n">Nrows</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nrows</span>
+        <span class="n">pixs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pairs</span>
+        <span class="n">cos</span><span class="p">,</span><span class="n">sin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cos</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sin</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="s">r&quot;&quot;&quot;</span>
+<span class="s">	       int i ;</span>
+<span class="s">           for ( i=0;i&lt;Nrows;++i){</span>
+<span class="s">            if (pixs(i) == -1) continue;</span>
+<span class="s">            x(i) +=  v(3*pixs(i)) + v(3*pixs(i)+1) *cos(i) + v(3*pixs(i)+2) *sin(i);</span>
+<span class="s">            }</span>
+<span class="s">        &quot;&quot;&quot;</span>
+        <span class="n">inline</span><span class="p">(</span><span class="n">code</span><span class="p">,[</span><span class="s">&#39;pixs&#39;</span><span class="p">,</span><span class="s">&#39;v&#39;</span><span class="p">,</span><span class="s">&#39;x&#39;</span><span class="p">,</span><span class="s">&#39;Nrows&#39;</span><span class="p">,</span><span class="s">&#39;cos&#39;</span><span class="p">,</span><span class="s">&#39;sin&#39;</span><span class="p">],</span><span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+		      <span class="n">extra_compile_args</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;-march=native  -O3  -fopenmp &#39;</span> <span class="p">],</span>
+		      <span class="n">support_code</span> <span class="o">=</span> <span class="s">r&quot;&quot;&quot;</span>
+<span class="s">	               #include &lt;stdio.h&gt;</span>
+<span class="s">                   #include &lt;omp.h&gt;</span>
+<span class="s">	               #include &lt;math.h&gt;&quot;&quot;&quot;</span><span class="p">,</span>
+              <span class="n">libraries</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;gomp&#39;</span><span class="p">],</span><span class="n">type_converters</span><span class="o">=</span><span class="n">weave</span><span class="o">.</span><span class="n">converters</span><span class="o">.</span><span class="n">blitz</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span></div>
 <div class="viewcode-block" id="SparseLO.rmult_iqu"><a class="viewcode-back" href="../../interfaces.html#interfaces.linearoperators.SparseLO.rmult_iqu">[docs]</a>    <span class="k">def</span> <span class="nf">rmult_iqu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Performs the product for the transpose operator :math:`A^T` to get a IQU map-like vector.</span>
@@ -210,25 +323,118 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">pol</span><span class="p">)</span>
-        <span class="n">zipped_arrs</span><span class="o">=</span><span class="nb">zip</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">pairs</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">cos</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sin</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">vec_in</span><span class="p">,</span><span class="n">pix</span><span class="p">,</span><span class="n">cos</span><span class="p">,</span><span class="n">sin</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">pairs</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">cos</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sin</span><span class="p">):</span>
-            <span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="p">]</span><span class="o">+=</span><span class="n">vec_in</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-            <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="o">+</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="p">]</span><span class="o">+=</span><span class="p">(</span><span class="n">vec_in</span><span class="o">*</span><span class="n">cos</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-            <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="o">+</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="p">]</span><span class="o">+=</span><span class="p">(</span><span class="n">vec_in</span><span class="o">*</span><span class="n">sin</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">x</span>
-</div>
+        <span class="n">N</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nrows</span>
+        <span class="n">pixs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pairs</span>
+        <span class="n">cos</span><span class="p">,</span><span class="n">sin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cos</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sin</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">	       int i;</span>
+<span class="s">           for ( i=0;i&lt;N;++i){</span>
+<span class="s">            if (pixs(i) == -1) continue;</span>
+<span class="s">            x(3*pixs(i))   += v(i);</span>
+<span class="s">            x(3*pixs(i)+1) += v(i)*cos(i);</span>
+<span class="s">            x(3*pixs(i)+2) += v(i)*sin(i);</span>
+<span class="s">            }</span>
+<span class="s">        &quot;&quot;&quot;</span>
+        <span class="n">inline</span><span class="p">(</span><span class="n">code</span><span class="p">,[</span><span class="s">&#39;pixs&#39;</span><span class="p">,</span><span class="s">&#39;v&#39;</span><span class="p">,</span><span class="s">&#39;x&#39;</span><span class="p">,</span><span class="s">&#39;N&#39;</span><span class="p">,</span><span class="s">&#39;cos&#39;</span><span class="p">,</span><span class="s">&#39;sin&#39;</span><span class="p">],</span><span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+		      <span class="n">extra_compile_args</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;-march=native  -O3  -fopenmp &#39;</span> <span class="p">],</span>
+		      <span class="n">support_code</span> <span class="o">=</span> <span class="s">r&quot;&quot;&quot;</span>
+<span class="s">	               #include &lt;stdio.h&gt;</span>
+<span class="s">                   #include &lt;omp.h&gt;</span>
+<span class="s">	               #include &lt;math.h&gt;&quot;&quot;&quot;</span><span class="p">,</span>
+              <span class="n">libraries</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;gomp&#39;</span><span class="p">],</span><span class="n">type_converters</span><span class="o">=</span><span class="n">weave</span><span class="o">.</span><span class="n">converters</span><span class="o">.</span><span class="n">blitz</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">x</span></div>
+<div class="viewcode-block" id="SparseLO.repixelization"><a class="viewcode-back" href="../../interfaces.html#interfaces.linearoperators.SparseLO.repixelization">[docs]</a>    <span class="k">def</span> <span class="nf">repixelization</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs pixel reordering by excluding all the unbserved or</span>
+<span class="sd">        pathological pixels.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_new_pix</span><span class="o">=</span><span class="mi">0</span>
+        <span class="n">n_removed_pix</span><span class="o">=</span><span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">old2new</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pol</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="c">#print &quot;no repixelization&quot;,self.counts</span>
+            <span class="k">for</span> <span class="n">jpix</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">jpix</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">old2new</span><span class="p">[</span><span class="n">jpix</span><span class="p">]</span><span class="o">=</span><span class="n">n_new_pix</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="p">[</span><span class="n">n_new_pix</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="p">[</span><span class="n">jpix</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">obspix</span><span class="p">[</span><span class="n">n_new_pix</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">obspix</span><span class="p">[</span><span class="n">jpix</span><span class="p">]</span>
+                    <span class="n">n_new_pix</span><span class="o">+=</span><span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">old2new</span><span class="p">[</span><span class="n">jpix</span><span class="p">]</span><span class="o">=-</span><span class="mi">1</span>
+                    <span class="n">n_removed_pix</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="c">#resize array</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="p">,</span><span class="nb">xrange</span><span class="p">(</span><span class="n">n_new_pix</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">))</span>
+            <span class="c">#print &quot;repixelization&quot;,self.counts</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#print &quot;no repixelization&quot;,self.cos2</span>
+
+            <span class="k">for</span> <span class="n">jpix</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">jpix</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">old2new</span><span class="p">[</span><span class="n">jpix</span><span class="p">]</span><span class="o">=</span><span class="n">n_new_pix</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">obspix</span><span class="p">[</span><span class="n">n_new_pix</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">obspix</span><span class="p">[</span><span class="n">jpix</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="p">[</span><span class="n">n_new_pix</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="p">[</span><span class="n">jpix</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="p">[</span><span class="n">n_new_pix</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="p">[</span><span class="n">jpix</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="p">[</span><span class="n">n_new_pix</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="p">[</span><span class="n">jpix</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pol</span><span class="o">==</span><span class="mi">3</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="p">[</span><span class="n">n_new_pix</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="p">[</span><span class="n">jpix</span><span class="p">]</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">sine</span><span class="p">[</span><span class="n">n_new_pix</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sine</span><span class="p">[</span><span class="n">jpix</span><span class="p">]</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">cosine</span><span class="p">[</span><span class="n">n_new_pix</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cosine</span><span class="p">[</span><span class="n">jpix</span><span class="p">]</span>
+                    <span class="n">n_new_pix</span><span class="o">+=</span><span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">old2new</span><span class="p">[</span><span class="n">jpix</span><span class="p">]</span><span class="o">=-</span><span class="mi">1</span>
+                    <span class="n">n_removed_pix</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="c">#resize</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="p">,</span><span class="nb">xrange</span><span class="p">(</span><span class="n">n_new_pix</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="p">,</span><span class="nb">xrange</span><span class="p">(</span><span class="n">n_new_pix</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="p">,</span><span class="nb">xrange</span><span class="p">(</span><span class="n">n_new_pix</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pol</span><span class="o">==</span><span class="mi">3</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="p">,</span><span class="nb">xrange</span><span class="p">(</span><span class="n">n_new_pix</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sine</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sine</span><span class="p">,</span><span class="nb">xrange</span><span class="p">(</span><span class="n">n_new_pix</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cosine</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cosine</span><span class="p">,</span><span class="nb">xrange</span><span class="p">(</span><span class="n">n_new_pix</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">))</span>
+            <span class="c">#print &quot;repixelization&quot;,self.cos2</span>
+        <span class="n">c</span><span class="o">=</span><span class="n">bash_colors</span><span class="p">()</span>
+        <span class="k">print</span> <span class="n">c</span><span class="o">.</span><span class="n">header</span><span class="p">(</span><span class="s">&quot;___&quot;</span><span class="o">*</span><span class="mi">30</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">c</span><span class="o">.</span><span class="n">blue</span><span class="p">(</span><span class="s">&quot;Found </span><span class="si">%d</span><span class="s"> pathological pixels</span><span class="se">\n</span><span class="s">Repixelizing  w/ </span><span class="si">%d</span><span class="s"> pixels.&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">n_removed_pix</span><span class="p">,</span><span class="n">n_new_pix</span><span class="p">))</span>
+        <span class="k">print</span> <span class="n">c</span><span class="o">.</span><span class="n">header</span><span class="p">(</span><span class="s">&quot;___&quot;</span><span class="o">*</span><span class="mi">30</span><span class="p">)</span>
+        <span class="c">#print &quot;map old2new&quot;,self.old2new</span>
+        <span class="c">#resizing all the arrays</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obspix</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obspix</span><span class="p">,</span><span class="nb">xrange</span><span class="p">(</span><span class="n">n_new_pix</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">))</span></div>
+<div class="viewcode-block" id="SparseLO.flagging_samples"><a class="viewcode-back" href="../../interfaces.html#interfaces.linearoperators.SparseLO.flagging_samples">[docs]</a>    <span class="k">def</span> <span class="nf">flagging_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Flags the time samples related to bad pixels to -1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">N</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nrows</span>
+        <span class="n">pixs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pairs</span>
+        <span class="n">o2n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">old2new</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">	       int i,pixel;</span>
+<span class="s">           for ( i=0;i&lt;N;++i){</span>
+<span class="s">            pixel=pixs(i);</span>
+<span class="s">            if (pixel == -1) continue;</span>
+<span class="s">            pixs(i)=o2n(pixel);</span>
+<span class="s">            }</span>
+<span class="s">        &quot;&quot;&quot;</span>
+        <span class="n">inline</span><span class="p">(</span><span class="n">code</span><span class="p">,[</span><span class="s">&#39;pixs&#39;</span><span class="p">,</span><span class="s">&#39;o2n&#39;</span><span class="p">,</span><span class="s">&#39;N&#39;</span><span class="p">],</span><span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+		      <span class="n">extra_compile_args</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;-march=native  -O3  -fopenmp &#39;</span> <span class="p">],</span>
+		      <span class="n">support_code</span> <span class="o">=</span> <span class="s">r&quot;&quot;&quot;</span>
+<span class="s">	               #include &lt;stdio.h&gt;</span>
+<span class="s">                   #include &lt;omp.h&gt;</span>
+<span class="s">	               #include &lt;math.h&gt;&quot;&quot;&quot;</span><span class="p">,</span>
+              <span class="n">libraries</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;gomp&#39;</span><span class="p">],</span><span class="n">type_converters</span><span class="o">=</span><span class="n">weave</span><span class="o">.</span><span class="n">converters</span><span class="o">.</span><span class="n">blitz</span><span class="p">)</span></div>
 <div class="viewcode-block" id="SparseLO.initializeweights"><a class="viewcode-back" href="../../interfaces.html#interfaces.linearoperators.SparseLO.initializeweights">[docs]</a>    <span class="k">def</span> <span class="nf">initializeweights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">phi</span><span class="p">,</span><span class="n">w</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Pre-compute the quantitities needed in the explicit</span>
-<span class="sd">        implementation of :math:`(A^T A)`:</span>
+<span class="sd">        Pre-compute the quantitities needed for the implementation of :math:`(A^T A)`</span>
+<span class="sd">        and to masks bad pixels.</span>
 
 <span class="sd">        **Parameters**</span>
 
 <span class="sd">        - ``counts`` :</span>
 <span class="sd">            how many times a given pixel is observed in the timestream;</span>
 <span class="sd">        - ``mask``:</span>
-<span class="sd">          mask from  either unobserved pixels (``counts=0``)  or   bad constrained</span>
-<span class="sd">          (see the ``pol=3,2`` following cases) ;</span>
+<span class="sd">            mask  either unobserved  (``counts=0``)  or   bad constrained pixels</span>
+<span class="sd">            (see the ``pol=3,2`` following cases) ;</span>
 <span class="sd">        - *If* ``pol=2``:</span>
 <span class="sd">            the matrix :math:`(A^T A)`  is  symmetric and block-diagonal, each block</span>
 <span class="sd">            can be written as :</span>
@@ -248,7 +454,7 @@
 <span class="sd">            The eigenvalues are needed to define the mask of bad constrained pixels whose</span>
 <span class="sd">            condition number is :math:`\gg 1`.</span>
 
-<span class="sd">        - [*If*  ``pol=3``]:</span>
+<span class="sd">        - *If*  ``pol=3``:</span>
 <span class="sd">            each block of the matrix :math:`(A^T A)`  is a ``3 x 3`` matrix:</span>
 
 <span class="sd">            .. csv-table::</span>
@@ -261,13 +467,12 @@
 <span class="sd">            the condition number similarly as in the ``pol=2`` case and the pixels</span>
 <span class="sd">            whose count is :math:`\geq 3`.</span>
 
-
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pol</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">weight</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pairs</span><span class="p">,</span><span class="n">w</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">+=</span><span class="n">weight</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">counts</span> <span class="o">!=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">counts</span> <span class="o">&gt;</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pol</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cos</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">phi</span><span class="p">)</span>
@@ -276,19 +481,17 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">weight</span><span class="p">,</span><span class="n">cos</span><span class="p">,</span><span class="n">sin</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pairs</span><span class="p">,</span><span class="n">w</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">cos</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sin</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">+=</span><span class="n">weight</span><span class="o">*</span><span class="n">cos</span><span class="o">*</span><span class="n">cos</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">+=</span><span class="n">weight</span><span class="o">*</span><span class="n">sin</span><span class="o">*</span><span class="n">sin</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">+=</span><span class="n">weight</span><span class="o">*</span><span class="n">cos</span><span class="o">*</span><span class="n">sin</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>    <span class="o">+=</span>  <span class="n">weight</span><span class="o">*</span><span class="n">cos</span><span class="o">*</span><span class="n">cos</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>    <span class="o">+=</span>  <span class="n">weight</span><span class="o">*</span><span class="n">sin</span><span class="o">*</span><span class="n">sin</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>  <span class="o">+=</span>  <span class="n">weight</span><span class="o">*</span><span class="n">cos</span><span class="o">*</span><span class="n">sin</span>
             <span class="n">det</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="p">)</span><span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="p">)</span>
             <span class="n">tr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">sin2</span>
             <span class="n">sqrt</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">tr</span><span class="o">*</span><span class="n">tr</span><span class="o">/</span><span class="mf">4.</span> <span class="o">-</span><span class="n">det</span><span class="p">)</span>
             <span class="n">lambda_max</span><span class="o">=</span><span class="n">tr</span><span class="o">/</span><span class="mf">2.</span> <span class="o">+</span> <span class="n">sqrt</span>
             <span class="n">lambda_min</span><span class="o">=</span><span class="n">tr</span><span class="o">/</span><span class="mf">2.</span> <span class="o">-</span> <span class="n">sqrt</span>
             <span class="n">cond_num</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">lambda_max</span><span class="o">/</span><span class="n">lambda_min</span><span class="p">)</span>
-            <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cond_num</span><span class="o">&lt;=</span><span class="mf">1.e3</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">/=</span><span class="n">det</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">/=</span><span class="n">det</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">/=</span><span class="n">det</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+            <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cond_num</span><span class="o">&lt;=</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c">#self.det=det</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="o">=</span><span class="n">mask</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pol</span><span class="o">==</span><span class="mi">3</span><span class="p">:</span>
@@ -301,12 +504,12 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">pix</span><span class="p">,</span><span class="n">weight</span><span class="p">,</span><span class="n">cos</span><span class="p">,</span><span class="n">sin</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pairs</span><span class="p">,</span><span class="n">w</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">cos</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sin</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="p">[</span><span class="n">pix</span><span class="p">]</span><span class="o">+=</span><span class="n">weight</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">cosine</span><span class="p">[</span><span class="n">pix</span><span class="p">]</span><span class="o">+=</span><span class="n">weight</span><span class="o">*</span><span class="n">cos</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">sine</span><span class="p">[</span><span class="n">pix</span><span class="p">]</span><span class="o">+=</span><span class="n">weight</span><span class="o">*</span><span class="n">sin</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="p">[</span><span class="n">pix</span><span class="p">]</span><span class="o">+=</span><span class="n">weight</span><span class="o">*</span><span class="n">cos</span><span class="o">*</span><span class="n">cos</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="p">[</span><span class="n">pix</span><span class="p">]</span><span class="o">+=</span><span class="n">weight</span><span class="o">*</span><span class="n">sin</span><span class="o">*</span><span class="n">sin</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="p">[</span><span class="n">pix</span><span class="p">]</span><span class="o">+=</span><span class="n">weight</span><span class="o">*</span><span class="n">sin</span><span class="o">*</span><span class="n">cos</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="p">[</span><span class="n">pix</span><span class="p">]</span>    <span class="o">+=</span>  <span class="n">weight</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cosine</span><span class="p">[</span><span class="n">pix</span><span class="p">]</span>    <span class="o">+=</span>  <span class="n">weight</span><span class="o">*</span><span class="n">cos</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sine</span><span class="p">[</span><span class="n">pix</span><span class="p">]</span>      <span class="o">+=</span>  <span class="n">weight</span><span class="o">*</span><span class="n">sin</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="p">[</span><span class="n">pix</span><span class="p">]</span>      <span class="o">+=</span>  <span class="n">weight</span><span class="o">*</span><span class="n">cos</span><span class="o">*</span><span class="n">cos</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="p">[</span><span class="n">pix</span><span class="p">]</span>      <span class="o">+=</span>  <span class="n">weight</span><span class="o">*</span><span class="n">sin</span><span class="o">*</span><span class="n">sin</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="p">[</span><span class="n">pix</span><span class="p">]</span>    <span class="o">+=</span>  <span class="n">weight</span><span class="o">*</span><span class="n">sin</span><span class="o">*</span><span class="n">cos</span>
 
             <span class="n">det_block</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="p">)</span><span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="p">)</span>
             <span class="n">Tr_block</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">sin2</span>
@@ -315,32 +518,39 @@
             <span class="n">lambda_min</span><span class="o">=</span><span class="n">Tr_block</span><span class="o">/</span><span class="mf">2.</span> <span class="o">-</span> <span class="n">sqrt</span>
             <span class="n">cond_num</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">lambda_max</span><span class="o">/</span><span class="n">lambda_min</span><span class="p">)</span>
             <span class="n">mask1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="o">&gt;</span><span class="mi">2</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cond_num</span><span class="o">&lt;=</span><span class="mf">1.e2</span> <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cond_num</span><span class="o">&lt;=</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">(</span><span class="n">mask1</span><span class="p">,</span><span class="n">mask</span><span class="p">)</span>
-
-
 </div>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">obs_pixs</span><span class="p">,</span><span class="n">phi</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">pol</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">w</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">w</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">w</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
-
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">pix_samples</span><span class="p">,</span><span class="n">phi</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">pol</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">w</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">pixel_schema</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">threshold_cond</span><span class="o">=</span><span class="mf">1.e3</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="o">=</span><span class="n">n</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">pol</span><span class="o">=</span><span class="n">pol</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nrows</span><span class="o">=</span><span class="n">m</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pairs</span><span class="o">=</span><span class="n">obs_pixs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">initializeweights</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span><span class="n">w</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">w</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">w</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pixel_schema</span>  <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">pixel_schema</span> <span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">)</span>
 
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pairs</span><span class="o">=</span><span class="n">pix_samples</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obspix</span><span class="o">=</span><span class="n">pixel_schema</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="o">=</span><span class="n">threshold_cond</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initializeweights</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span><span class="n">w</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">repixelization</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flagging_samples</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obspix</span><span class="p">)</span>
+        <span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span>
         <span class="k">if</span> <span class="n">pol</span><span class="o">==</span><span class="mi">3</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__runcase</span><span class="o">=</span><span class="s">&#39;IQU&#39;</span>
-            <span class="nb">super</span><span class="p">(</span><span class="n">SparseLO</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">nargin</span><span class="o">=</span><span class="n">pol</span><span class="o">*</span><span class="n">n</span><span class="p">,</span><span class="n">nargout</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">matvec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mult_iqu</span><span class="p">,</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">SparseLO</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">nargin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pol</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">,</span><span class="n">nargout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nrows</span><span class="p">,</span> <span class="n">matvec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mult_iqu</span><span class="p">,</span>
                                             <span class="n">symmetric</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">rmatvec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rmult_iqu</span> <span class="p">)</span>
         <span class="k">elif</span> <span class="n">pol</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__runcase</span><span class="o">=</span><span class="s">&#39;I&#39;</span>
-            <span class="nb">super</span><span class="p">(</span><span class="n">SparseLO</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">nargin</span><span class="o">=</span><span class="n">n</span><span class="p">,</span><span class="n">nargout</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">matvec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mult</span><span class="p">,</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">SparseLO</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">nargin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pol</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">,</span><span class="n">nargout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nrows</span><span class="p">,</span> <span class="n">matvec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mult</span><span class="p">,</span>
                                                 <span class="n">symmetric</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">rmatvec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rmult</span> <span class="p">)</span>
         <span class="k">elif</span> <span class="n">pol</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__runcase</span><span class="o">=</span><span class="s">&#39;QU&#39;</span>
-            <span class="nb">super</span><span class="p">(</span><span class="n">SparseLO</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">nargin</span><span class="o">=</span><span class="n">pol</span><span class="o">*</span><span class="n">n</span><span class="p">,</span><span class="n">nargout</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">matvec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mult_qu</span><span class="p">,</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">SparseLO</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">nargin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pol</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">,</span><span class="n">nargout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nrows</span><span class="p">,</span> <span class="n">matvec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mult_qu</span><span class="p">,</span>
                                                 <span class="n">symmetric</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">rmatvec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rmult_qu</span> <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&quot;No valid polarization key set!</span><span class="se">\t</span><span class="s">=&gt;</span><span class="se">\t</span><span class="s">pol=</span><span class="si">%d</span><span class="s"> </span><span class="se">\n</span><span class="s"> </span><span class="se">\</span>
@@ -409,7 +619,7 @@
 
 <span class="sd">    **Parameters**</span>
 
-<span class="sd">    - ``blocksize`` : {int}</span>
+<span class="sd">    - ``blocksize`` : {int or list }</span>
 <span class="sd">        size of each diagonal block, it is : :math:`blocksize= n/nblocks`.</span>
 <span class="sd">    - ``t`` : {array}</span>
 <span class="sd">        noise values for each block</span>
@@ -440,27 +650,49 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
+        <span class="n">tmplist</span><span class="o">=</span><span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">blocklist</span><span class="o">=</span><span class="p">[]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isoffdiag</span><span class="p">:</span>
+            <span class="n">tmplist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">covnoise</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">blocklist</span> <span class="o">=</span> <span class="p">[</span><span class="n">ToeplitzLO</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">blocksize</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">covnoise</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isoffdiag</span><span class="p">:</span>
-            <span class="n">tmplist</span><span class="o">=</span><span class="p">[]</span>
             <span class="n">d</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocksize</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">covnoise</span><span class="p">:</span>
                 <span class="n">d</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">blocklist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lp</span><span class="o">.</span><span class="n">DiagonalOperator</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
                 <span class="n">tmplist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-
                 <span class="n">d</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocksize</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">diag</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">tmplist</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="BlockLO.build_unbalanced_blocks"><a class="viewcode-back" href="../../interfaces.html#interfaces.linearoperators.BlockLO.build_unbalanced_blocks">[docs]</a>    <span class="k">def</span> <span class="nf">build_unbalanced_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build the  list of Diagonal blocks of :class:`blk.BlockDiagonalLinearOperator`</span>
+<span class="sd">        by assuming that the blocks have different size. Of course it is required that:</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">diag</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">tmplist</span><span class="p">)</span>
+<span class="sd">        .. math::</span>
+<span class="sd">            \sum _{i=1} ^{nblocks} size(block_i) = N_t</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blocklist</span><span class="o">=</span><span class="p">[]</span>
+        <span class="n">tmplist</span><span class="o">=</span><span class="p">[]</span>
+        <span class="k">for</span> <span class="n">size</span><span class="p">,</span><span class="n">weight</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocksize</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">covnoise</span><span class="p">):</span>
+            <span class="n">d</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+            <span class="n">d</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">blocklist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lp</span><span class="o">.</span><span class="n">DiagonalOperator</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
+            <span class="n">tmplist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+            <span class="n">d</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">diag</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">tmplist</span><span class="p">)</span>
+
 </div>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">blocksize</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">offdiag</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__isoffdiag</span> <span class="o">=</span> <span class="n">offdiag</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">blocksize</span><span class="o">=</span><span class="n">blocksize</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">covnoise</span><span class="o">=</span><span class="n">t</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">build_blocks</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">blocksize</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">build_unbalanced_blocks</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">build_blocks</span><span class="p">()</span>
 
         <span class="nb">super</span><span class="p">(</span><span class="n">BlockLO</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocklist</span><span class="p">)</span>
 
@@ -471,6 +703,59 @@
 <span class="sd">        off-diagonal terms.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__isoffdiag</span>
+
+</div></div>
+<div class="viewcode-block" id="BlockDiagonalLO"><a class="viewcode-back" href="../../interfaces.html#interfaces.linearoperators.BlockDiagonalLO">[docs]</a><span class="k">class</span> <span class="nc">BlockDiagonalLO</span><span class="p">(</span><span class="n">lp</span><span class="o">.</span><span class="n">LinearOperator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Explicit implementation of :math:`A \, diag(N^{-1}) A^T`, in order to save time</span>
+<span class="sd">    in the application of the two matrices onto a vector (in this way the leading dimension  will be :math:`n_{pix}`</span>
+<span class="sd">    instead of  :math:`n_t`).</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        it is initialized as the  :class:`BlockDiagonalPreconditionerLO` since it involves</span>
+<span class="sd">        computation with  the same matrices.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">pol</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="o">=</span><span class="n">pol</span><span class="o">*</span><span class="n">n</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pol</span><span class="o">=</span><span class="n">pol</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BlockDiagonalLO</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">nargin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span><span class="n">nargout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>\
+                                                <span class="n">matvec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mult</span><span class="p">,</span> <span class="n">symmetric</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pixels</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pol</span><span class="o">==</span><span class="mi">1</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">counts</span>
+        <span class="k">elif</span> <span class="n">pol</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">sin2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">sincos</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">cos2</span>
+            <span class="k">if</span> <span class="n">pol</span><span class="o">==</span><span class="mi">3</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">counts</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cos</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">cosine</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sin</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">sine</span>
+        <span class="k">print</span> <span class="s">&quot;initialized&quot;</span>
+
+<div class="viewcode-block" id="BlockDiagonalLO.mult"><a class="viewcode-back" href="../../interfaces.html#interfaces.linearoperators.BlockDiagonalLO.mult">[docs]</a>    <span class="k">def</span> <span class="nf">mult</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Multiplication of  :math:`A \, diag(N^{-1}) A^T` on to a vector math:`x`</span>
+<span class="sd">        ( :math:`n_{pix}` array).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">y</span><span class="o">=</span><span class="n">x</span><span class="o">*</span><span class="mf">0.</span>
+        <span class="c">#print len(self.counts),len(x)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pol</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="c">#y[self.mask]=x[self.mask]*self.counts[self.mask]</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">x</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">counts</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">pol</span><span class="o">==</span><span class="mi">3</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">pix</span><span class="p">,</span><span class="n">s2</span><span class="p">,</span><span class="n">c2</span><span class="p">,</span><span class="n">cs</span><span class="p">,</span><span class="n">c</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">hits</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pixels</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="p">,</span>\
+                                                <span class="bp">self</span><span class="o">.</span><span class="n">cos</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sin</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="p">):</span>
+                <span class="n">y</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="p">]</span>  <span class="o">=</span> <span class="n">hits</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="p">]</span> <span class="o">+</span> <span class="n">c</span> <span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span>  <span class="n">s</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">y</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span>  <span class="n">c</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="p">]</span> <span class="o">+</span> <span class="n">c2</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">cs</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">y</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span>  <span class="n">s</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="p">]</span> <span class="o">+</span> <span class="n">cs</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">s2</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">pol</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">pix</span><span class="p">,</span><span class="n">s2</span><span class="p">,</span><span class="n">c2</span><span class="p">,</span><span class="n">cs</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixels</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="p">):</span>
+                <span class="n">y</span><span class="p">[</span><span class="n">pix</span><span class="o">*</span><span class="mi">2</span><span class="p">]</span>  <span class="o">=</span>  <span class="n">c2</span>  <span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">pix</span><span class="p">]</span> <span class="o">+</span> <span class="n">cs</span> <span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="n">pix</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">y</span><span class="p">[</span><span class="n">pix</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span>  <span class="n">cs</span>  <span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">pix</span><span class="p">]</span> <span class="o">+</span> <span class="n">s2</span> <span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="n">pix</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">y</span>
+
 </div></div>
 <div class="viewcode-block" id="BlockDiagonalPreconditionerLO"><a class="viewcode-back" href="../../interfaces.html#interfaces.linearoperators.BlockDiagonalPreconditionerLO">[docs]</a><span class="k">class</span> <span class="nc">BlockDiagonalPreconditionerLO</span><span class="p">(</span><span class="n">lp</span><span class="o">.</span><span class="n">LinearOperator</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -482,7 +767,8 @@
 
 <span class="sd">    where :math:`A` is a :class:`SparseLO` operator.</span>
 <span class="sd">    Such inverse operator  could be easily computed given the structure of the</span>
-<span class="sd">    matrix :math:`A`, (sparse if `pol=1`, block-sparse if `pol=3,2`).</span>
+<span class="sd">    matrix :math:`A`. It could be  sparse in the case of Intensity only analysis (`pol=1`),</span>
+<span class="sd">    block-sparse if polarization is included (`pol=3,2`).</span>
 
 
 <span class="sd">    **Parameters**</span>
@@ -505,43 +791,46 @@
         <span class="n">y</span><span class="o">=</span><span class="n">x</span><span class="o">*</span><span class="mf">0.</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pol</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
-            <span class="n">y</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span>
+            <span class="c">#y[self.mask]=x[self.mask]/self.counts[self.mask]</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">x</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">counts</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">pol</span><span class="o">==</span><span class="mi">3</span><span class="p">:</span>
             <span class="n">determ</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sin2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="p">)</span>\
                 <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">cos</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cos</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sin2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">sin</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sin</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cos2</span>\
                 <span class="o">+</span><span class="mf">2.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cos</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sin</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sincos</span>
 
-            <span class="k">for</span> <span class="n">pix</span><span class="p">,</span><span class="n">det</span><span class="p">,</span><span class="n">s2</span><span class="p">,</span><span class="n">c2</span><span class="p">,</span><span class="n">cs</span><span class="p">,</span><span class="n">c</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">hits</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span><span class="n">determ</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="p">,</span>\
+            <span class="k">for</span> <span class="n">pix</span><span class="p">,</span><span class="n">det</span><span class="p">,</span><span class="n">s2</span><span class="p">,</span><span class="n">c2</span><span class="p">,</span><span class="n">cs</span><span class="p">,</span><span class="n">c</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">hits</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pixels</span><span class="p">,</span><span class="n">determ</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="p">,</span>\
                                 <span class="bp">self</span><span class="o">.</span><span class="n">cos</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sin</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="p">):</span>
                 <span class="n">y</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="p">]</span>  <span class="o">=</span><span class="p">((</span><span class="n">c2</span><span class="o">*</span><span class="n">s2</span><span class="o">-</span><span class="n">cs</span><span class="o">*</span><span class="n">cs</span><span class="p">)</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="p">]</span><span class="o">+</span> <span class="p">(</span><span class="n">s</span><span class="o">*</span><span class="n">cs</span><span class="o">-</span><span class="n">c</span><span class="o">*</span><span class="n">s2</span><span class="p">)</span>  <span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>  <span class="o">+</span><span class="p">(</span> <span class="n">c</span><span class="o">*</span><span class="n">cs</span><span class="o">-</span><span class="n">s</span><span class="o">*</span><span class="n">c2</span><span class="p">)</span>  <span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="o">+</span><span class="mi">2</span><span class="p">])</span><span class="o">/</span><span class="n">det</span>
                 <span class="n">y</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="p">((</span><span class="n">s</span><span class="o">*</span><span class="n">cs</span><span class="o">-</span><span class="n">c</span><span class="o">*</span><span class="n">s2</span><span class="p">)</span>  <span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="p">]</span><span class="o">+</span> <span class="p">(</span><span class="n">hits</span><span class="o">*</span><span class="n">s2</span><span class="o">-</span><span class="n">s</span><span class="o">*</span><span class="n">s</span><span class="p">)</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>  <span class="o">+</span><span class="p">(</span> <span class="n">s</span><span class="o">*</span><span class="n">c</span><span class="o">-</span><span class="n">hits</span><span class="o">*</span><span class="n">cs</span><span class="p">)</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="o">+</span><span class="mi">2</span><span class="p">])</span><span class="o">/</span><span class="n">det</span>
                 <span class="n">y</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="p">((</span><span class="n">c</span><span class="o">*</span><span class="n">cs</span> <span class="o">-</span><span class="n">s</span><span class="o">*</span><span class="n">c2</span><span class="p">)</span> <span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="p">]</span><span class="o">+</span><span class="p">(</span><span class="o">-</span><span class="n">hits</span><span class="o">*</span><span class="n">cs</span><span class="o">+</span><span class="n">c</span><span class="o">*</span><span class="n">s</span><span class="p">)</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>  <span class="o">+</span><span class="p">(</span><span class="n">hits</span><span class="o">*</span><span class="n">c2</span><span class="o">-</span><span class="n">c</span><span class="o">*</span><span class="n">c</span><span class="p">)</span> <span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">pix</span><span class="o">+</span><span class="mi">2</span><span class="p">])</span><span class="o">/</span><span class="n">det</span>
 
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">pol</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">pix</span><span class="p">,</span><span class="n">s2</span><span class="p">,</span><span class="n">c2</span><span class="p">,</span><span class="n">cs</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="p">):</span>
-                <span class="n">y</span><span class="p">[</span><span class="n">pix</span><span class="o">*</span><span class="mi">2</span><span class="p">]</span>  <span class="o">=</span>  <span class="n">s2</span>  <span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">pix</span><span class="p">]</span> <span class="o">-</span> <span class="n">cs</span> <span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="n">pix</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
-                <span class="n">y</span><span class="p">[</span><span class="n">pix</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span> <span class="o">-</span><span class="n">cs</span>  <span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">pix</span><span class="p">]</span> <span class="o">+</span> <span class="n">c2</span> <span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="n">pix</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">det</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="p">)</span><span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">pix</span><span class="p">,</span><span class="n">s2</span><span class="p">,</span><span class="n">c2</span><span class="p">,</span><span class="n">cs</span><span class="p">,</span><span class="n">determ</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixels</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="p">,</span><span class="n">det</span><span class="p">):</span>
+                <span class="n">y</span><span class="p">[</span><span class="n">pix</span><span class="o">*</span><span class="mi">2</span><span class="p">]</span>  <span class="o">=</span>  <span class="p">(</span><span class="n">s2</span>  <span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">pix</span><span class="p">]</span> <span class="o">-</span> <span class="n">cs</span> <span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="n">pix</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="n">determ</span>
+                <span class="n">y</span><span class="p">[</span><span class="n">pix</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span>  <span class="p">(</span><span class="o">-</span><span class="n">cs</span>  <span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">pix</span><span class="p">]</span> <span class="o">+</span> <span class="n">c2</span> <span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="n">pix</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="n">determ</span>
 
         <span class="k">return</span> <span class="n">y</span>
 </div>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">A</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">pol</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="o">=</span><span class="n">pol</span><span class="o">*</span><span class="n">n</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">mask</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pixels</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pol</span><span class="o">=</span><span class="n">pol</span>
         <span class="k">if</span> <span class="n">pol</span><span class="o">==</span><span class="mi">1</span> <span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">counts</span>
         <span class="k">elif</span> <span class="n">pol</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">sin2</span><span class="p">[</span><span class="n">A</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">cos2</span><span class="p">[</span><span class="n">A</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">sincos</span><span class="p">[</span><span class="n">A</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span>
+            <span class="c">#self.det=A.det[A.mask]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">sin2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">cos2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">sincos</span>
         <span class="k">elif</span> <span class="n">pol</span><span class="o">==</span><span class="mi">3</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">counts</span><span class="p">[</span><span class="n">A</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">sin2</span><span class="p">[</span><span class="n">A</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">cos2</span><span class="p">[</span><span class="n">A</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">sincos</span><span class="p">[</span><span class="n">A</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cos</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">cosine</span><span class="p">[</span><span class="n">A</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sin</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">sine</span><span class="p">[</span><span class="n">A</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">counts</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">counts</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sin2</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">sin2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cos2</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">cos2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sincos</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">sincos</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cos</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">cosine</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sin</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">sine</span>
 
         <span class="nb">super</span><span class="p">(</span><span class="n">BlockDiagonalPreconditionerLO</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">nargin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span><span class="n">nargout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>\
                                                             <span class="n">matvec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mult</span><span class="p">,</span> <span class="n">symmetric</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
@@ -629,15 +918,15 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__preconditioner</span>
 
 </div></div>
-<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">solve</span><span class="p">,</span><span class="n">lu</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">solve</span><span class="p">,</span><span class="n">lu</span><span class="p">,</span><span class="n">eigh</span>
 
 <div class="viewcode-block" id="CoarseLO"><a class="viewcode-back" href="../../interfaces.html#interfaces.linearoperators.CoarseLO">[docs]</a><span class="k">class</span> <span class="nc">CoarseLO</span><span class="p">(</span><span class="n">lp</span><span class="o">.</span><span class="n">LinearOperator</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class contains all the operation involving the coarse operator :math:`E`.</span>
 <span class="sd">    In this implementation :math:`E` is always applied to a vector wiht</span>
 <span class="sd">    its inverse : :math:`E^{-1}`.</span>
-<span class="sd">    When initialized it performs an LU decomposition to accelerate the performances</span>
-<span class="sd">    of the inversion.</span>
+<span class="sd">    When initialized it performs either an LU or an eigenvalue  decomposition</span>
+<span class="sd">    to accelerate the performances of the inversion.</span>
 
 <span class="sd">    **Parameters**</span>
 
@@ -646,7 +935,12 @@
 <span class="sd">    - ``A`` : {SparseLO}</span>
 <span class="sd">            to  compute vectors :math:`AZ_i`;</span>
 <span class="sd">    - ``r`` :  {int}</span>
-<span class="sd">            :math:`rank(Z)`, dimension of the deflation subspace.</span>
+<span class="sd">            :math:`rank(Z)`, dimension of the deflation subspace;</span>
+<span class="sd">    - ``apply``:{str}</span>
+<span class="sd">            - ``LU``: performs LU decomposition,</span>
+<span class="sd">            - ``eig``: compute the eigenvalues and eigenvectors of ``E``.</span>
+
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="CoarseLO.mult"><a class="viewcode-back" href="../../interfaces.html#interfaces.linearoperators.CoarseLO.mult">[docs]</a>    <span class="k">def</span> <span class="nf">mult</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
@@ -659,12 +953,54 @@
         <span class="n">x</span><span class="o">=</span><span class="n">solve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">U</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">overwrite_b</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">x</span>
 </div>
-<div class="viewcode-block" id="CoarseLO.set_operator"><a class="viewcode-back" href="../../interfaces.html#interfaces.linearoperators.CoarseLO.set_operator">[docs]</a>    <span class="k">def</span> <span class="nf">set_operator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">Z</span><span class="p">,</span><span class="n">Az</span><span class="p">,</span><span class="n">r</span><span class="p">):</span>
+<div class="viewcode-block" id="CoarseLO.mult_eig"><a class="viewcode-back" href="../../interfaces.html#interfaces.linearoperators.CoarseLO.mult_eig">[docs]</a>    <span class="k">def</span> <span class="nf">mult_eig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Matrix vector multiplication with :math:`E^{-1}` computed via</span>
+<span class="sd">        :func:`setting_inverse_w_eigenvalues`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">invE</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CoarseLO.setting_inverse_w_eigenvalues"><a class="viewcode-back" href="../../interfaces.html#interfaces.linearoperators.CoarseLO.setting_inverse_w_eigenvalues">[docs]</a>    <span class="k">def</span> <span class="nf">setting_inverse_w_eigenvalues</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">E</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This routine computes the inverse of ``E`` by a decomposition through an  eigenvalue</span>
+<span class="sd">        decomposition. It further checks whether it has some degenerate eigenvalues,</span>
+<span class="sd">        i.e. 0 to numerical precision (``1.e-15``), and eventually excludes these eigenvalues</span>
+<span class="sd">        from the anaysis.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">eigenvals</span><span class="p">,</span><span class="n">W</span><span class="o">=</span><span class="n">eigh</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>
+        <span class="n">lambda_max</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">eigenvals</span><span class="p">)</span>
+        <span class="n">diags</span><span class="o">=</span><span class="n">eigenvals</span><span class="o">*</span><span class="mf">0.</span>
+        <span class="c">#print abs(eigenvals/lambda_max)</span>
+        <span class="n">threshold_to_degen</span><span class="o">=</span><span class="mf">1.e-5</span>
+        <span class="n">nondegenerate</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">eigenvals</span><span class="o">/</span><span class="n">lambda_max</span><span class="p">)</span><span class="o">&gt;</span><span class="n">threshold_to_degen</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">degenerate</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">eigenvals</span><span class="o">/</span><span class="n">lambda_max</span><span class="p">)</span><span class="o">&lt;</span><span class="n">threshold_to_degen</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">c</span><span class="o">=</span><span class="n">bash_colors</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">degenerate</span><span class="p">)</span><span class="o">!=</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">print</span> <span class="n">c</span><span class="o">.</span><span class="n">header</span><span class="p">(</span><span class="s">&quot;===&quot;</span><span class="o">*</span><span class="mi">30</span><span class="p">)</span>
+            <span class="k">print</span> <span class="n">c</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s"> DISCARDING </span><span class="si">%d</span><span class="s"> OUT OF </span><span class="si">%d</span><span class="s"> EIGENVALUES</span><span class="se">\t</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">degenerate</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="n">eigenvals</span><span class="p">)))</span>
+            <span class="k">print</span> <span class="n">eigenvals</span><span class="p">[</span><span class="n">degenerate</span><span class="p">]</span>
+            <span class="k">print</span> <span class="n">c</span><span class="o">.</span><span class="n">header</span><span class="p">(</span><span class="s">&quot;===&quot;</span><span class="o">*</span><span class="mi">30</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span> <span class="n">c</span><span class="o">.</span><span class="n">header</span><span class="p">(</span><span class="s">&quot;===&quot;</span><span class="o">*</span><span class="mi">30</span><span class="p">)</span>
+            <span class="k">print</span> <span class="n">c</span><span class="o">.</span><span class="n">header</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s"> Matrix E is not singular, all its eigenvalues have been taken into account</span><span class="se">\t</span><span class="s">&quot;</span><span class="p">)</span>
+            <span class="k">print</span> <span class="n">c</span><span class="o">.</span><span class="n">header</span><span class="p">(</span><span class="s">&quot;===&quot;</span><span class="o">*</span><span class="mi">30</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">nondegenerate</span><span class="p">:</span>
+                <span class="n">diags</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="mf">1.</span><span class="o">/</span><span class="n">eigenvals</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">D</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">diags</span><span class="p">)</span>
+        <span class="n">tmp</span><span class="o">=</span><span class="n">dgemm</span><span class="p">(</span><span class="n">D</span><span class="p">,</span><span class="n">W</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">invE</span><span class="o">=</span><span class="n">dgemm</span><span class="p">(</span><span class="n">W</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">tmp</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">Z</span><span class="p">,</span><span class="n">Az</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="nb">apply</span><span class="o">=</span><span class="s">&#39;LU&#39;</span><span class="p">):</span>
         <span class="n">M</span><span class="o">=</span><span class="n">dgemm</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span><span class="n">Az</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">U</span><span class="o">=</span><span class="n">lu</span><span class="p">(</span><span class="n">M</span><span class="p">,</span><span class="n">permute_l</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">overwrite_a</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">check_finite</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span></div>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">Z</span><span class="p">,</span><span class="n">Az</span><span class="p">,</span><span class="n">r</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_operator</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span><span class="n">Az</span><span class="p">,</span><span class="n">r</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">CoarseLO</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">nargin</span><span class="o">=</span><span class="n">r</span><span class="p">,</span><span class="n">nargout</span><span class="o">=</span><span class="n">r</span><span class="p">,</span><span class="n">matvec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mult</span><span class="p">,</span>
+        <span class="k">if</span> <span class="nb">apply</span><span class="o">==</span><span class="s">&#39;eig&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setting_inverse_w_eigenvalues</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">CoarseLO</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">nargin</span><span class="o">=</span><span class="n">r</span><span class="p">,</span><span class="n">nargout</span><span class="o">=</span><span class="n">r</span><span class="p">,</span><span class="n">matvec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mult_eig</span><span class="p">,</span>
+                                            <span class="n">symmetric</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">apply</span> <span class="o">==</span><span class="s">&#39;LU&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">U</span><span class="o">=</span><span class="n">lu</span><span class="p">(</span><span class="n">M</span><span class="p">,</span><span class="n">permute_l</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">overwrite_a</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">check_finite</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">CoarseLO</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">nargin</span><span class="o">=</span><span class="n">r</span><span class="p">,</span><span class="n">nargout</span><span class="o">=</span><span class="n">r</span><span class="p">,</span><span class="n">matvec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mult</span><span class="p">,</span>
                                             <span class="n">symmetric</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="DeflationLO"><a class="viewcode-back" href="../../interfaces.html#interfaces.linearoperators.DeflationLO">[docs]</a><span class="k">class</span> <span class="nc">DeflationLO</span><span class="p">(</span><span class="n">lp</span><span class="o">.</span><span class="n">LinearOperator</span><span class="p">):</span>
@@ -687,7 +1023,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nrows</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">):</span>
-            <span class="n">y</span><span class="o">+=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="n">y</span><span class="o">+=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>   <span class="c">#.astype(x.dtype)</span>
         <span class="k">return</span> <span class="n">y</span></div>
 <div class="viewcode-block" id="DeflationLO.rmult"><a class="viewcode-back" href="../../interfaces.html#interfaces.linearoperators.DeflationLO.rmult">[docs]</a>    <span class="k">def</span> <span class="nf">rmult</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -743,8 +1079,8 @@
         <div class="right">
           
     <div class="footer">
-        &copy; Copyright 2015, Giuseppe Puglisi.
-      Last updated on Jan 31, 2016.
+        &copy; Copyright 2016, Giuseppe Puglisi.
+      Last updated on May 03, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
         </div>

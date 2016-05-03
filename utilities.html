@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>utilities package &mdash; COSmic Microwave background linear Operators MAp-making Preconditioner 0 documentation</title>
+    <title>utilities package &mdash; COSmic Microwave Operators MAp-making Preconditioner 0 documentation</title>
     
     <link rel="stylesheet" href="_static/agogo.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="COSmic Microwave background linear Operators MAp-making Preconditioner 0 documentation" href="index.html" />
+    <link rel="top" title="COSmic Microwave Operators MAp-making Preconditioner 0 documentation" href="index.html" />
     <link rel="up" title="Modules" href="modules.html" />
     <link rel="prev" title="interfaces package" href="interfaces.html" /> 
   </head>
@@ -31,7 +31,7 @@
     <div class="header-wrapper">
       <div class="header">
         <div class="headertitle"><a
-          href="index.html">COSmic Microwave background linear Operators MAp-making Preconditioner 0 documentation</a></div>
+          href="index.html">COSmic Microwave Operators MAp-making Preconditioner 0 documentation</a></div>
         <div class="rel">
           <a href="interfaces.html" title="interfaces package"
              accesskey="P">previous</a> |
@@ -66,8 +66,8 @@
 
 <dl class="function">
 <dt id="utilities.IOfiles.read_from_data">
-<tt class="descclassname">utilities.IOfiles.</tt><tt class="descname">read_from_data</tt><big>(</big><em>filename</em>, <em>pol</em><big>)</big><a class="reference internal" href="_modules/utilities/IOfiles.html#read_from_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.IOfiles.read_from_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read a hdf5 file preprocessed by the AnalysisBackend
+<tt class="descclassname">utilities.IOfiles.</tt><tt class="descname">read_from_data</tt><big>(</big><em>filename</em>, <em>pol</em>, <em>npairs=None</em><big>)</big><a class="reference internal" href="_modules/utilities/IOfiles.html#read_from_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.IOfiles.read_from_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a hdf5 file of one Constant Elevation Scan preprocessed by the AnalysisBackend
 of the Polarbear Collaboration.</p>
 <p><strong>Parameters</strong></p>
 <ul>
@@ -77,20 +77,26 @@ of the Polarbear Collaboration.</p>
 </dd>
 </dl>
 </li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">pol</span></tt>:{int}</p>
-<ul class="simple">
-<li><tt class="docutils literal"><span class="pre">1</span></tt>: read data for temperature only data;</li>
-<li><tt class="docutils literal"><span class="pre">3</span></tt>: read  for polarization data;</li>
-</ul>
+<li><p class="first"><tt class="docutils literal"><span class="pre">pol</span></tt>:{int}
+- <tt class="docutils literal"><span class="pre">1</span></tt>: read data for intensity  data;
+- <tt class="docutils literal"><span class="pre">2</span></tt>: read data for polarization data;
+- <tt class="docutils literal"><span class="pre">3</span></tt>: read  for both intensity and  polarization data;</p>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">npairs</span></tt>:{int}</dt>
+<dd><p class="first last">set how many bolo_pairs to read, default is <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd>
+</dl>
 </li>
 </ul>
 </dd></dl>
 
 <dl class="function">
 <dt id="utilities.IOfiles.read_from_data_with_subscan_resize">
-<tt class="descclassname">utilities.IOfiles.</tt><tt class="descname">read_from_data_with_subscan_resize</tt><big>(</big><em>filename</em>, <em>pol</em><big>)</big><a class="reference internal" href="_modules/utilities/IOfiles.html#read_from_data_with_subscan_resize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.IOfiles.read_from_data_with_subscan_resize" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">utilities.IOfiles.</tt><tt class="descname">read_from_data_with_subscan_resize</tt><big>(</big><em>filename</em>, <em>pol</em>, <em>npairs=None</em><big>)</big><a class="reference internal" href="_modules/utilities/IOfiles.html#read_from_data_with_subscan_resize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.IOfiles.read_from_data_with_subscan_resize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a hdf5 file preprocessed by the AnalysisBackend
-of the Polarbear Collaboration.</p>
+of the Polarbear Collaboration by considering, as chunks of data, only the
+subscan samples.</p>
 <p><strong>Parameters</strong></p>
 <ul>
 <li><dl class="first docutils">
@@ -99,11 +105,15 @@ of the Polarbear Collaboration.</p>
 </dd>
 </dl>
 </li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">pol</span></tt>:{int}</p>
-<ul class="simple">
-<li><tt class="docutils literal"><span class="pre">1</span></tt>: read data for temperature only data;</li>
-<li><tt class="docutils literal"><span class="pre">3</span></tt>: read  for polarization data;</li>
-</ul>
+<li><p class="first"><tt class="docutils literal"><span class="pre">pol</span></tt>:{int}
+- <tt class="docutils literal"><span class="pre">1</span></tt>: read data for temperature only data;
+- <tt class="docutils literal"><span class="pre">2,3</span></tt>: read  for polarization data;</p>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">npairs</span></tt>:{int}</dt>
+<dd><p class="first last">set how many bolo_pairs to read, default is <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd>
+</dl>
 </li>
 </ul>
 </dd></dl>
@@ -111,13 +121,45 @@ of the Polarbear Collaboration.</p>
 <dl class="function">
 <dt id="utilities.IOfiles.read_from_hdf5">
 <tt class="descclassname">utilities.IOfiles.</tt><tt class="descname">read_from_hdf5</tt><big>(</big><em>filename</em><big>)</big><a class="reference internal" href="_modules/utilities/IOfiles.html#read_from_hdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.IOfiles.read_from_hdf5" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read from a hdf5 file whose datasets are created by the routine
-<tt class="docutils literal"><span class="pre">utilities_functions.system_setup</span></tt></p>
+<dd><p>Read from a hdf5 file whose datasets are created by the routine <tt class="xref py py-func docutils literal"><span class="pre">utilities_functions.system_setup()</span></tt></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="utilities.IOfiles.read_multiple_ces">
+<tt class="descclassname">utilities.IOfiles.</tt><tt class="descname">read_multiple_ces</tt><big>(</big><em>filelist</em>, <em>pol</em>, <em>npairs=None</em>, <em>filtersubscan=True</em><big>)</big><a class="reference internal" href="_modules/utilities/IOfiles.html#read_multiple_ces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.IOfiles.read_multiple_ces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a list of  hdf5 files of multiple CES scans preprocessed by the AnalysisBackend
+of the Polarbear Collaboration.</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">filelist</span></tt>:{list of str}</dt>
+<dd><p class="first last">list containing the path to the hdf5 files</p>
+</dd>
+</dl>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">pol</span></tt>:{int}
+- <tt class="docutils literal"><span class="pre">1</span></tt>: read data for intensity  data;
+- <tt class="docutils literal"><span class="pre">2</span></tt>: read data for polarization data;
+- <tt class="docutils literal"><span class="pre">3</span></tt>: read  for both intensity  and polarization data;</p>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">npairs</span></tt>:{int}</dt>
+<dd><p class="first last">set how many bolo_pairs to read, default is <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">filtersubscan</span></tt>:{bool}</dt>
+<dd><p class="first last">activate the subscan selection on to data (default <tt class="docutils literal"><span class="pre">True</span></tt>).</p>
+</dd>
+</dl>
+</li>
+</ul>
 </dd></dl>
 
 <dl class="function">
 <dt id="utilities.IOfiles.read_ritz_eigenvectors_from_hdf5">
-<tt class="descclassname">utilities.IOfiles.</tt><tt class="descname">read_ritz_eigenvectors_from_hdf5</tt><big>(</big><em>filename</em>, <em>npix</em><big>)</big><a class="reference internal" href="_modules/utilities/IOfiles.html#read_ritz_eigenvectors_from_hdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.IOfiles.read_ritz_eigenvectors_from_hdf5" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">utilities.IOfiles.</tt><tt class="descname">read_ritz_eigenvectors_from_hdf5</tt><big>(</big><em>filename</em><big>)</big><a class="reference internal" href="_modules/utilities/IOfiles.html#read_ritz_eigenvectors_from_hdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.IOfiles.read_ritz_eigenvectors_from_hdf5" title="Permalink to this definition">¶</a></dt>
 <dd><p>read from hdf5 file the approximated eigenvectors
 related to the deflation subspace.</p>
 </dd></dl>
@@ -139,7 +181,7 @@ routine.</p>
 <dt id="utilities.IOfiles.write_to_hdf5">
 <tt class="descclassname">utilities.IOfiles.</tt><tt class="descname">write_to_hdf5</tt><big>(</big><em>filename</em>, <em>obs_pixels</em>, <em>noise_values</em>, <em>d</em>, <em>phi=None</em><big>)</big><a class="reference internal" href="_modules/utilities/IOfiles.html#write_to_hdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.IOfiles.write_to_hdf5" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write onto hdf5 file whose datasets are created by the routine
-<tt class="docutils literal"><span class="pre">utilities_functions.system_setup</span></tt></p>
+<tt class="xref py py-func docutils literal"><span class="pre">utilities_functions.system_setup()</span></tt>.</p>
 </dd></dl>
 
 </div>
@@ -147,21 +189,72 @@ routine.</p>
 <span id="utilities-healpy-functions-module"></span><h2>utilities.healpy_functions module<a class="headerlink" href="#module-utilities.healpy_functions" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="utilities.healpy_functions.compare_maps">
-<tt class="descclassname">utilities.healpy_functions.</tt><tt class="descname">compare_maps</tt><big>(</big><em>outm</em>, <em>inm</em>, <em>pol</em>, <em>patch</em>, <em>mask</em>, <em>figname=None</em><big>)</big><a class="reference internal" href="_modules/utilities/healpy_functions.html#compare_maps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.healpy_functions.compare_maps" title="Permalink to this definition">¶</a></dt>
-<dd><p>Print on device the input map,  the one processed from datastream
+<tt class="descclassname">utilities.healpy_functions.</tt><tt class="descname">compare_maps</tt><big>(</big><em>outm</em>, <em>inm</em>, <em>pol</em>, <em>patch</em>, <em>mask</em>, <em>figname=None</em>, <em>remove_offset=True</em>, <em>norm='hist'</em><big>)</big><a class="reference internal" href="_modules/utilities/healpy_functions.html#compare_maps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.healpy_functions.compare_maps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output on device or in file the input map,  the output one processed from datastream
 and their difference.</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">outm</span></tt> :{array,list}</dt>
+<dd><p class="first last">map in the <cite>.fits</cite> format;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">inm</span></tt>:{array,list}</dt>
+<dd><p class="first last">input <cite>.fits</cite> map to be compared  with <cite>outm</cite>;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">pol</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{int}</span></dt>
+<dd><p class="first last">see <a class="reference internal" href="#utilities.healpy_functions.show_map" title="utilities.healpy_functions.show_map"><tt class="xref py py-func docutils literal"><span class="pre">show_map()</span></tt></a>;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">patch</span></tt>: {str}</dt>
+<dd><p class="first last">Key to a dictionary to get the equatorial coordinates given a name patch, see <a class="reference internal" href="#utilities.healpy_functions.show_map" title="utilities.healpy_functions.show_map"><tt class="xref py py-func docutils literal"><span class="pre">show_map()</span></tt></a>;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">mask</span></tt>:{array}</dt>
+<dd><p class="first last">binary map (0=unobserved, 1=observed pixels);</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">figname</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{str}</span></dt>
+<dd><p class="first last">If unset, outputs on screen;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">remove_offset</span></tt>:{bool}</dt>
+<dd><p class="first last">If True removes the monopole from the input map,`inm`, in the observed region;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">norm</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{str}</span></dt>
+<dd><p class="first last">key to the normalization of the color scale, ( <cite>None</cite>, <cite>hist</cite>, <cite>log</cite>)</p>
+</dd>
+</dl>
+</li>
+</ul>
 </dd></dl>
 
 <dl class="function">
 <dt id="utilities.healpy_functions.obspix2mask">
-<tt class="descclassname">utilities.healpy_functions.</tt><tt class="descname">obspix2mask</tt><big>(</big><em>obspix</em>, <em>pixs</em>, <em>nside</em>, <em>fname</em>, <em>write=False</em><big>)</big><a class="reference internal" href="_modules/utilities/healpy_functions.html#obspix2mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.healpy_functions.obspix2mask" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">utilities.healpy_functions.</tt><tt class="descname">obspix2mask</tt><big>(</big><em>obspix</em>, <em>nside</em>, <em>fname=None</em><big>)</big><a class="reference internal" href="_modules/utilities/healpy_functions.html#obspix2mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.healpy_functions.obspix2mask" title="Permalink to this definition">¶</a></dt>
 <dd><p>From the observed pixels to a binary mask, (<tt class="docutils literal"><span class="pre">mask[obspix]=1</span> <span class="pre">,</span> <span class="pre">0</span> <span class="pre">elsewhere</span></tt>)</p>
 <p><strong>Parameters</strong></p>
 <ul>
 <li><dl class="first docutils">
 <dt><tt class="docutils literal"><span class="pre">osbpix</span></tt>:{array}</dt>
-<dd><p class="first last">pixels observed during the scanning of the telescope.
-Already ordered in the  HEALPIX pixelization.</p>
+<dd><p class="first last">pixels observed during the scanning of the telescope and considered
+as not pathological (ordering in the  HEALPIX pixelization).</p>
 </dd>
 </dl>
 </li>
@@ -173,13 +266,7 @@ Already ordered in the  HEALPIX pixelization.</p>
 </li>
 <li><dl class="first docutils">
 <dt><tt class="docutils literal"><span class="pre">fname</span></tt>:{str}</dt>
-<dd><p class="first last">path to the fits file to store/read the map</p>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt><tt class="docutils literal"><span class="pre">write</span></tt>:{bool}</dt>
-<dd><p class="first last">if <tt class="docutils literal"><span class="pre">True</span></tt> it writes onto the file, it reads from it otherwise</p>
+<dd><p class="first last">path to the fits file to store/read the map, if set it writes onto the file</p>
 </dd>
 </dl>
 </li>
@@ -192,9 +279,9 @@ Already ordered in the  HEALPIX pixelization.</p>
 
 <dl class="function">
 <dt id="utilities.healpy_functions.reorganize_map">
-<tt class="descclassname">utilities.healpy_functions.</tt><tt class="descname">reorganize_map</tt><big>(</big><em>mapin</em>, <em>obspix</em>, <em>npix</em>, <em>nside</em>, <em>pol</em>, <em>fname</em>, <em>write=False</em><big>)</big><a class="reference internal" href="_modules/utilities/healpy_functions.html#reorganize_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.healpy_functions.reorganize_map" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">utilities.healpy_functions.</tt><tt class="descname">reorganize_map</tt><big>(</big><em>mapin</em>, <em>obspix</em>, <em>npix</em>, <em>nside</em>, <em>pol</em>, <em>fname=None</em><big>)</big><a class="reference internal" href="_modules/utilities/healpy_functions.html#reorganize_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.healpy_functions.reorganize_map" title="Permalink to this definition">¶</a></dt>
 <dd><p>From the solution map of the preconditioner to a Healpix map.
-It specially split the input array <tt class="docutils literal"><span class="pre">mapin</span></tt> which is a IQU
+It specially splits the input array <tt class="docutils literal"><span class="pre">mapin</span></tt> which is a IQU
 for a polarization analysis in to 3 arrays <tt class="docutils literal"><span class="pre">i,q,u</span></tt>.</p>
 <p><strong>Parameters</strong></p>
 <ul>
@@ -222,8 +309,6 @@ for a polarization analysis in to 3 arrays <tt class="docutils literal"><span cl
 </li>
 <li><p class="first"><tt class="docutils literal"><span class="pre">fname</span></tt>:{str}</p>
 </li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">write</span></tt>:{bool}</p>
-</li>
 </ul>
 <p><strong>Returns</strong></p>
 <ul>
@@ -234,6 +319,48 @@ for a polarization analysis in to 3 arrays <tt class="docutils literal"><span cl
 </dl>
 </li>
 </ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="utilities.healpy_functions.show_map">
+<tt class="descclassname">utilities.healpy_functions.</tt><tt class="descname">show_map</tt><big>(</big><em>outm</em>, <em>pol</em>, <em>patch</em>, <em>figname=None</em>, <em>norm='hist'</em><big>)</big><a class="reference internal" href="_modules/utilities/healpy_functions.html#show_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.healpy_functions.show_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output the map <cite>outm</cite> to screen or to a file.</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">outm</span></tt> :</dt>
+<dd><p class="first last">map in the <cite>.fits</cite> format;</p>
+</dd>
+</dl>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">pol</span></tt> : {int}</p>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">patch</span></tt>: {str}</dt>
+<dd><p class="first last">Key to a dictionary to get the equatorial coordinates given a name patch (Polarbear collaboration
+is now observing in 3 patches: <cite>ra23</cite>, <cite>ra12</cite>, <cite>lst4p5</cite>);</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">figname</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{str}</span></dt>
+<dd><p class="first last">If unset, outputs on screen;</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">norm</span></tt> <span class="classifier-delimiter">:</span> <span class="classifier">{str}</span></dt>
+<dd><p class="first last">key to the normalization of the color scale, ( <cite>None</cite>, <cite>hist</cite>, <cite>log</cite>)</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="utilities.healpy_functions.subtract_offset">
+<tt class="descclassname">utilities.healpy_functions.</tt><tt class="descname">subtract_offset</tt><big>(</big><em>mapp</em>, <em>obspix</em>, <em>pol</em><big>)</big><a class="reference internal" href="_modules/utilities/healpy_functions.html#subtract_offset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.healpy_functions.subtract_offset" title="Permalink to this definition">¶</a></dt>
+<dd><p>remove the average from the observed pixels  of <tt class="docutils literal"><span class="pre">mapp</span></tt>.</p>
 </dd></dl>
 
 </div>
@@ -269,10 +396,100 @@ as matrices via the `` numpy.asarray`` function.</p>
 the frequency of HWP and the size <tt class="docutils literal"><span class="pre">n</span></tt> of the timestream.</p>
 </dd></dl>
 
+<dl class="class">
+<dt id="utilities.utilities_functions.bash_colors">
+<em class="property">class </em><tt class="descclassname">utilities.utilities_functions.</tt><tt class="descname">bash_colors</tt><a class="reference internal" href="_modules/utilities/utilities_functions.html#bash_colors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.utilities_functions.bash_colors" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class contains the necessary definitions to print to bash
+screen with colors. Sometimes it can be useful...</p>
+<dl class="attribute">
+<dt id="utilities.utilities_functions.bash_colors.BOLD">
+<tt class="descname">BOLD</tt><em class="property"> = '\x1b[1m'</em><a class="headerlink" href="#utilities.utilities_functions.bash_colors.BOLD" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="utilities.utilities_functions.bash_colors.ENDC">
+<tt class="descname">ENDC</tt><em class="property"> = '\x1b[0m'</em><a class="headerlink" href="#utilities.utilities_functions.bash_colors.ENDC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="utilities.utilities_functions.bash_colors.FAIL">
+<tt class="descname">FAIL</tt><em class="property"> = '\x1b[91m'</em><a class="headerlink" href="#utilities.utilities_functions.bash_colors.FAIL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="utilities.utilities_functions.bash_colors.HEADER">
+<tt class="descname">HEADER</tt><em class="property"> = '\x1b[95m'</em><a class="headerlink" href="#utilities.utilities_functions.bash_colors.HEADER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="utilities.utilities_functions.bash_colors.OKBLUE">
+<tt class="descname">OKBLUE</tt><em class="property"> = '\x1b[94m'</em><a class="headerlink" href="#utilities.utilities_functions.bash_colors.OKBLUE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="utilities.utilities_functions.bash_colors.OKGREEN">
+<tt class="descname">OKGREEN</tt><em class="property"> = '\x1b[92m'</em><a class="headerlink" href="#utilities.utilities_functions.bash_colors.OKGREEN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="utilities.utilities_functions.bash_colors.UNDERLINE">
+<tt class="descname">UNDERLINE</tt><em class="property"> = '\x1b[4m'</em><a class="headerlink" href="#utilities.utilities_functions.bash_colors.UNDERLINE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="utilities.utilities_functions.bash_colors.WARNING">
+<tt class="descname">WARNING</tt><em class="property"> = '\x1b[93m'</em><a class="headerlink" href="#utilities.utilities_functions.bash_colors.WARNING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="utilities.utilities_functions.bash_colors.blue">
+<tt class="descname">blue</tt><big>(</big><em>string</em><big>)</big><a class="reference internal" href="_modules/utilities/utilities_functions.html#bash_colors.blue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.utilities_functions.bash_colors.blue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="utilities.utilities_functions.bash_colors.bold">
+<tt class="descname">bold</tt><big>(</big><em>string</em><big>)</big><a class="reference internal" href="_modules/utilities/utilities_functions.html#bash_colors.bold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.utilities_functions.bash_colors.bold" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="utilities.utilities_functions.bash_colors.fail">
+<tt class="descname">fail</tt><big>(</big><em>string</em><big>)</big><a class="reference internal" href="_modules/utilities/utilities_functions.html#bash_colors.fail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.utilities_functions.bash_colors.fail" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="utilities.utilities_functions.bash_colors.green">
+<tt class="descname">green</tt><big>(</big><em>string</em><big>)</big><a class="reference internal" href="_modules/utilities/utilities_functions.html#bash_colors.green"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.utilities_functions.bash_colors.green" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="utilities.utilities_functions.bash_colors.header">
+<tt class="descname">header</tt><big>(</big><em>string</em><big>)</big><a class="reference internal" href="_modules/utilities/utilities_functions.html#bash_colors.header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.utilities_functions.bash_colors.header" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="utilities.utilities_functions.bash_colors.underline">
+<tt class="descname">underline</tt><big>(</big><em>string</em><big>)</big><a class="reference internal" href="_modules/utilities/utilities_functions.html#bash_colors.underline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.utilities_functions.bash_colors.underline" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="utilities.utilities_functions.bash_colors.warning">
+<tt class="descname">warning</tt><big>(</big><em>string</em><big>)</big><a class="reference internal" href="_modules/utilities/utilities_functions.html#bash_colors.warning"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.utilities_functions.bash_colors.warning" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 <dl class="function">
 <dt id="utilities.utilities_functions.checking_output">
 <tt class="descclassname">utilities.utilities_functions.</tt><tt class="descname">checking_output</tt><big>(</big><em>info</em><big>)</big><a class="reference internal" href="_modules/utilities/utilities_functions.html#checking_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.utilities_functions.checking_output" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="function">
+<dt id="utilities.utilities_functions.filter_warnings">
+<tt class="descclassname">utilities.utilities_functions.</tt><tt class="descname">filter_warnings</tt><big>(</big><em>wfilter</em><big>)</big><a class="reference internal" href="_modules/utilities/utilities_functions.html#filter_warnings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.utilities_functions.filter_warnings" title="Permalink to this definition">¶</a></dt>
+<dd><p>wfilter: {string}
+- &#8220;ignore&#8221;: never print matching warnings;
+- &#8220;always&#8221;: always print matching warnings</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="utilities.utilities_functions.noise_val">
@@ -333,7 +550,7 @@ i.e. number  of blocks in N_tt&#8217;.</p>
 
 <dl class="function">
 <dt id="utilities.utilities_functions.pairs_gen">
-<tt class="descclassname">utilities.utilities_functions.</tt><tt class="descname">pairs_gen</tt><big>(</big><em>nrows</em>, <em>ncols</em>, <em>pol=1</em><big>)</big><a class="reference internal" href="_modules/utilities/utilities_functions.html#pairs_gen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.utilities_functions.pairs_gen" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">utilities.utilities_functions.</tt><tt class="descname">pairs_gen</tt><big>(</big><em>nrows</em>, <em>ncols</em><big>)</big><a class="reference internal" href="_modules/utilities/utilities_functions.html#pairs_gen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.utilities_functions.pairs_gen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate random <tt class="docutils literal"><span class="pre">int</span></tt> numbers   to fill the pointing matrix for observed pixels.
 Implemented even for polarization runs.</p>
 </dd></dl>
@@ -357,7 +574,7 @@ Implemented even for polarization runs.</p>
 
 <dl class="function">
 <dt id="utilities.utilities_functions.system_setup">
-<tt class="descclassname">utilities.utilities_functions.</tt><tt class="descname">system_setup</tt><big>(</big><em>nt</em>, <em>npix</em>, <em>nb</em>, <em>pol=1</em><big>)</big><a class="reference internal" href="_modules/utilities/utilities_functions.html#system_setup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.utilities_functions.system_setup" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">utilities.utilities_functions.</tt><tt class="descname">system_setup</tt><big>(</big><em>nt</em>, <em>npix</em>, <em>nb</em><big>)</big><a class="reference internal" href="_modules/utilities/utilities_functions.html#system_setup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utilities.utilities_functions.system_setup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Setup the linear system</p>
 <p><strong>Returns</strong></p>
 <ul>
@@ -443,8 +660,8 @@ the input/output.</p>
         <div class="right">
           
     <div class="footer">
-        &copy; Copyright 2015, Giuseppe Puglisi.
-      Last updated on Jan 31, 2016.
+        &copy; Copyright 2016, Giuseppe Puglisi.
+      Last updated on May 03, 2016.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
         </div>

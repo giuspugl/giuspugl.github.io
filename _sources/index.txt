@@ -1,4 +1,4 @@
-.. COSmic Microwave background linear Operators MAp-making Preconditioner documentation master file, created by
+.. COSmic Microwave  Operator MAp-making Preconditioner documentation master file, created by
    sphinx-quickstart on Wed Nov 18 15:51:35 2015.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
@@ -6,9 +6,8 @@
 COSMOMAP 2
 ==========
 
-COSmic Microwave background linear Operators MAp-making Preconditioner 2 Level is a package which performs the solution of Linear System via preconditioning it in 2 steps ( see Szyldlarski et al.2014). The whole system matrices are implemented as Linear Operators.
+COSmic Microwave Operators MAp-making Preconditioner  is a package which performs iteratively the solution to the CMB map-making problem  via preconditioning the system-matrix in 2 steps ( see Szyldlarski et al.2014). The whole system matrices are implemented as Linear Operators.
 
-The code is fully built within a python context since the whole Analisys Backend of the collaboration is dealt in python.
 
 .. toctree::
    :maxdepth: 2
