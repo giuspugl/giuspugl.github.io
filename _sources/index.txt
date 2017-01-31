@@ -1,18 +1,29 @@
-.. COSmic Microwave  Operator MAp-making Preconditioner documentation master file, created by
-   sphinx-quickstart on Wed Nov 18 15:51:35 2015.
+.. MCMole3D documentation master file, created by
+   sphinx-quickstart on Mon Jan 30 18:52:14 2017.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-COSMOMAP 2
-==========
+MCMole3D: *Digging into the Galaxy*
+===================================
+.. image:: 
+	mole.jpg
 
-COSmic Microwave Operators MAp-making Preconditioner  is a package which performs iteratively the solution to the CMB map-making problem  via preconditioning the system-matrix in 2 steps ( see Szyldlarski et al.2014). The whole system matrices are implemented as Linear Operators.
+---------------------
+Documentation Package
+---------------------
+
+ Monte-Carlo MOlecular Line Emission MCMOLE3D is a python package which simulates the 3D  molecular cloud emission in the Milky Way. In particular, it can simulate both  the unpolarized and polarized emission coming from the   first rotational line of Carbon Monoxide (CO, :math:`J=1-0`),  which has been extensively observed during last decades. The goal of this package is to compare the simulated emission with the one observed by recent *full sky*  survey from Planck satellite. 
+
+For a full description of the first scientific results and polarization forecasts please refer to `Puglisi et al 2017 <http://arxiv.org/abs/1701.07856>`_ . 
+ 
+For the Planck survey products  go to the `Planck Legacy Archive <http://pla.esac.esa.int/pla/#home>`_ website. 
+
 
 
 .. toctree::
    :maxdepth: 2
-   
-   modules
+   Documentation	
+      
 
 
 Indices and tables

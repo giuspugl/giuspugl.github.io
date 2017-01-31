@@ -1,0 +1,39 @@
+Code Documentation 
+==================
+
+Modules
+-------
+
+cloudmodel.MCMole3D module
+--------------------------
+
+.. automodule:: cloudmodel.MCMole3D
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cloudmodel.mapping module
+-------------------------
+
+.. automodule:: cloudmodel.mapping
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cloudmodel.utils module
+-----------------------
+
+.. automodule:: cloudmodel.utils 
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: cloudmodel 
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
