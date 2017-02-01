@@ -143,7 +143,11 @@ It exploits <tt class="xref py py-mod docutils literal"><span class="pre">astrop
 <dl class="method">
 <dt id="cloudmodel.MCMole3D.Cloud_Population.plot_3d_population">
 <tt class="descname">plot_3d_population</tt><big>(</big><em>figname=None</em><big>)</big><a class="reference internal" href="_modules/cloudmodel/MCMole3D.html#Cloud_Population.plot_3d_population"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cloudmodel.MCMole3D.Cloud_Population.plot_3d_population" title="Permalink to this definition">¶</a></dt>
-<dd><p>Makes density contour plots of all the cloud population</p>
+<dd><p>Makes density contour plots of all the cloud population.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Set <cite>figname</cite> to the path of your file where  to  save the plot, otherwise  it outputs to screen.</p>
+</div>
 </dd></dl>
 
 <dl class="method">
@@ -151,6 +155,10 @@ It exploits <tt class="xref py py-mod docutils literal"><span class="pre">astrop
 <tt class="descname">plot_histogram_population</tt><big>(</big><em>figname=None</em><big>)</big><a class="reference internal" href="_modules/cloudmodel/MCMole3D.html#Cloud_Population.plot_histogram_population"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cloudmodel.MCMole3D.Cloud_Population.plot_histogram_population" title="Permalink to this definition">¶</a></dt>
 <dd><p>Makes histograms of all over the population of clouds to check the probability
 density functions (PDF) of the coordinates <span class="math">\(R_{gal}, z, d_{\odot}, \ell\)</span>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Set <cite>figname</cite> to the path of your file where  to  save the plot, otherwise  it outputs to screen.</p>
+</div>
 </dd></dl>
 
 <dl class="method">
@@ -158,6 +166,10 @@ density functions (PDF) of the coordinates <span class="math">\(R_{gal}, z, d_{\
 <tt class="descname">plot_radial</tt><big>(</big><em>X</em>, <em>ylabel</em>, <em>figname=None</em>, <em>color='b'</em><big>)</big><a class="reference internal" href="_modules/cloudmodel/MCMole3D.html#Cloud_Population.plot_radial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cloudmodel.MCMole3D.Cloud_Population.plot_radial" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot a quantity <cite>X</cite> which may variates across the Galactic radius <span class="math">\(R_{gal}\)</span>.
 (e.g.  the midplane thickness, the emissivity profile,etc...)</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Set <cite>figname</cite> to the path of your file where  to  save the plot, otherwise  it outputs to screen.</p>
+</div>
 </dd></dl>
 
 <dl class="method">
@@ -453,17 +465,31 @@ if you have the angles in radiants set <cite>rad_units</cite> to <cite>True</cit
 
 <dl class="function">
 <dt id="cloudmodel.utils.plot_2powerlaw_size_function">
-<tt class="descclassname">cloudmodel.utils.</tt><tt class="descname">plot_2powerlaw_size_function</tt><big>(</big><em>s0</em>, <em>s1</em>, <em>s2</em>, <em>figpath=None</em><big>)</big><a class="reference internal" href="_modules/cloudmodel/utils.html#plot_2powerlaw_size_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cloudmodel.utils.plot_2powerlaw_size_function" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">cloudmodel.utils.</tt><tt class="descname">plot_2powerlaw_size_function</tt><big>(</big><em>s0</em>, <em>s1</em>, <em>s2</em>, <em>figname=None</em><big>)</big><a class="reference internal" href="_modules/cloudmodel/utils.html#plot_2powerlaw_size_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cloudmodel.utils.plot_2powerlaw_size_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot histograms and Probability function of the cloud size function     as explained in eq.(4) and (5) of <a class="reference external" href="http://arxiv.org/abs/1701.07856">Puglisi+ 2017</a>.</p>
 <p>It is defined by three parameters : <cite>s0</cite>,       <cite>s1</cite>,`s2`, being respectively the,        typical cloud size (where the size function peaks), the minimum and the maximum sizes. Thus <span class="math">\(s_1&lt;s_0&lt;s_2\)</span>.</p>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Set <cite>figname</cite> to the path of your file where  to  save the plot, otherwise  it outputs to screen.</p>
+</div>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">
 <dt id="cloudmodel.utils.plot_intensity_integrals">
-<tt class="descclassname">cloudmodel.utils.</tt><tt class="descname">plot_intensity_integrals</tt><big>(</big><em>obs_I</em>, <em>mod_I</em>, <em>model=None</em>, <em>fname=None</em><big>)</big><a class="reference internal" href="_modules/cloudmodel/utils.html#plot_intensity_integrals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cloudmodel.utils.plot_intensity_integrals" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">cloudmodel.utils.</tt><tt class="descname">plot_intensity_integrals</tt><big>(</big><em>obs_I</em>, <em>mod_I</em>, <em>model=None</em>, <em>figname=None</em><big>)</big><a class="reference internal" href="_modules/cloudmodel/utils.html#plot_intensity_integrals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cloudmodel.utils.plot_intensity_integrals" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Plot the intensity integrals computed with <a class="reference internal" href="#cloudmodel.utils.integrate_intensity_map" title="cloudmodel.utils.integrate_intensity_map"><tt class="xref py py-func docutils literal"><span class="pre">integrate_intensity_map()</span></tt></a> for both</dt>
-<dd>the obseverved  maps(<cite>obs_I</cite>) and the one simulated with MCMole3D <cite>mod_I</cite>.</dd>
+<dd><p class="first">the obseverved  maps(<cite>obs_I</cite>) and the one simulated with MCMole3D <cite>mod_I</cite>.</p>
+<div class="last admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>Set <cite>figname</cite> to the path of your file where  to  save the plot, otherwise  it outputs to screen.</li>
+<li>Set <cite>model</cite> to put the title and the</li>
+</ul>
+</div>
+</dd>
 </dl>
 </dd></dl>
 
@@ -512,7 +538,7 @@ if you have the angles in radiants set <cite>rad_units</cite> to <cite>True</cit
           
     <div class="footer">
         &copy; Copyright 2017, Giuseppe Puglisi.
-      Last updated on Jan 31, 2017.
+      Last updated on Feb 01, 2017.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
         </div>

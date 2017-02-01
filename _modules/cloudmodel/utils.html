@@ -68,13 +68,17 @@
 
 
 
-<div class="viewcode-block" id="plot_2powerlaw_size_function"><a class="viewcode-back" href="../../Documentation.html#cloudmodel.utils.plot_2powerlaw_size_function">[docs]</a><span class="k">def</span> <span class="nf">plot_2powerlaw_size_function</span><span class="p">(</span><span class="n">s0</span><span class="p">,</span><span class="n">s1</span><span class="p">,</span><span class="n">s2</span><span class="p">,</span><span class="n">figpath</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="plot_2powerlaw_size_function"><a class="viewcode-back" href="../../Documentation.html#cloudmodel.utils.plot_2powerlaw_size_function">[docs]</a><span class="k">def</span> <span class="nf">plot_2powerlaw_size_function</span><span class="p">(</span><span class="n">s0</span><span class="p">,</span><span class="n">s1</span><span class="p">,</span><span class="n">s2</span><span class="p">,</span><span class="n">figname</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
 	<span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">	Plot histograms and Probability function of the cloud size function \</span>
 <span class="sd">	as explained in eq.(4) and (5) of `Puglisi+ 2017 &lt;http://arxiv.org/abs/1701.07856&gt;`_.</span>
 
 <span class="sd">	It is defined by three parameters : `s0`,	`s1`,`s2`, being respectively the,\</span>
 <span class="sd">	  typical cloud size (where the size function peaks), the minimum and the maximum sizes. Thus :math:`s_1&lt;s_0&lt;s_2`.</span>
+
+<span class="sd">	  .. note::</span>
+
+<span class="sd">		  Set `figname` to the path of your file where  to  save the plot, otherwise  it outputs to screen.</span>
 
 <span class="sd">	&quot;&quot;&quot;</span>
 
@@ -123,8 +127,8 @@
 		<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">r&#39;$L $ [ pc ]&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 		<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">r&#39;$\mathcal{P}(&lt;L)$&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 	<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s">&#39;best&#39;</span><span class="p">,</span><span class="n">prop</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;size&#39;</span><span class="p">:</span><span class="mi">15</span><span class="p">})</span>
-	<span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">figpath</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">):</span>
-			<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">figpath</span><span class="p">)</span>
+	<span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">figname</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">):</span>
+			<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">figname</span><span class="p">)</span>
 	<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 	<span class="k">pass</span>
 </div>
@@ -137,10 +141,15 @@
 	<span class="k">else</span> <span class="p">:</span>
 		<span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">4.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>  <span class="o">/</span><span class="n">hp</span><span class="o">.</span><span class="n">nside2npix</span><span class="p">(</span><span class="n">nside</span><span class="p">))</span>
 </div>
-<div class="viewcode-block" id="plot_intensity_integrals"><a class="viewcode-back" href="../../Documentation.html#cloudmodel.utils.plot_intensity_integrals">[docs]</a><span class="k">def</span> <span class="nf">plot_intensity_integrals</span><span class="p">(</span><span class="n">obs_I</span><span class="p">,</span><span class="n">mod_I</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">fname</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="plot_intensity_integrals"><a class="viewcode-back" href="../../Documentation.html#cloudmodel.utils.plot_intensity_integrals">[docs]</a><span class="k">def</span> <span class="nf">plot_intensity_integrals</span><span class="p">(</span><span class="n">obs_I</span><span class="p">,</span><span class="n">mod_I</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">figname</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
 	<span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">	Plot the intensity integrals computed with :func:`integrate_intensity_map` for both</span>
 <span class="sd">	 the obseverved  maps(`obs_I`) and the one simulated with MCMole3D `mod_I`.</span>
+
+<span class="sd">	 .. note::</span>
+
+<span class="sd">		 - Set `figname` to the path of your file where  to  save the plot, otherwise  it outputs to screen.</span>
+<span class="sd">		 - Set `model` to put the title and the </span>
 <span class="sd">	&quot;&quot;&quot;</span>
 
 	<span class="n">stringn</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;observ&#39;</span><span class="p">,</span><span class="s">&#39;model&#39;</span><span class="p">]</span>
@@ -164,10 +173,10 @@
 	<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s">&#39;best&#39;</span><span class="p">,</span><span class="n">prop</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;size&#39;</span><span class="p">:</span><span class="mi">15</span><span class="p">})</span>
 	<span class="k">if</span> <span class="ow">not</span> <span class="n">model</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
 		<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">model</span><span class="o">+</span><span class="s">&#39; Model&#39;</span><span class="p">)</span>
-	<span class="k">if</span> <span class="n">fname</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+	<span class="k">if</span> <span class="n">figname</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
 		<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 	<span class="k">else</span> <span class="p">:</span>
-		<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">figname</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="integrate_intensity_map"><a class="viewcode-back" href="../../Documentation.html#cloudmodel.utils.integrate_intensity_map">[docs]</a><span class="k">def</span> <span class="nf">integrate_intensity_map</span><span class="p">(</span><span class="n">Imap</span><span class="p">,</span><span class="n">nside</span><span class="p">,</span><span class="n">latmin</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span><span class="n">latmax</span><span class="o">=</span><span class="mf">2.</span> <span class="p">,</span><span class="n">nsteps_long</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span><span class="n">rad_units</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">planck_map</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
 	<span class="sd">&quot;&quot;&quot;</span>
@@ -310,7 +319,7 @@
           
     <div class="footer">
         &copy; Copyright 2017, Giuseppe Puglisi.
-      Last updated on Jan 31, 2017.
+      Last updated on Feb 01, 2017.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
         </div>
