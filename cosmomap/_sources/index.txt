@@ -1,0 +1,23 @@
+.. COSmic Microwave  Operator MAp-making Preconditioner documentation master file, created by
+   sphinx-quickstart on Wed Nov 18 15:51:35 2015.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+COSMOMAP 2
+==========
+
+COSmic Microwave Operators MAp-making Preconditioner  is a package which performs iteratively the solution to the CMB map-making problem  via preconditioning the system-matrix with Deflation preconditioner  ( see Szyldlarski et al.2014). The whole system matrices are implemented as Linear Operators. Visit the Github repository `COSMOMAP2 <http://github.com/giuspugl/COSMOMAP2/>`_.
+
+.. toctree::
+   :maxdepth: 2
+   
+   modules
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+

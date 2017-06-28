@@ -1,0 +1,439 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>utilities.IOfiles &mdash; COSMOMAP2 0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/agogo.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="COSMOMAP2 0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="header-wrapper">
+      <div class="header">
+        <div class="headertitle"><a
+          href="../../index.html">COSMOMAP2</a></div>
+        <div class="rel">
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a>
+        </div>
+       </div>
+    </div>
+
+    <div class="content-wrapper">
+      <div class="content">
+        <div class="document">
+            
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for utilities.IOfiles</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#   IOFILES.PY</span>
+<span class="c">#   input output routines for hdf5 data</span>
+<span class="c">#   date: 2016-12-02</span>
+<span class="c">#   author: GIUSEPPE PUGLISI</span>
+<span class="c">#</span>
+<span class="c">#   Copyright (C) 2016   Giuseppe Puglisi    giuspugl@sissa.it</span>
+<span class="c">#</span>
+
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">h5py</span> <span class="kn">as</span> <span class="nn">h5</span>
+<span class="kn">from</span>  <span class="nn">utilities_functions</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="read_from_data"><a class="viewcode-back" href="../../utilities.html#utilities.IOfiles.read_from_data">[docs]</a><span class="k">def</span> <span class="nf">read_from_data</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">pol</span><span class="p">,</span><span class="n">npairs</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read a hdf5 file of one Constant Elevation Scan preprocessed by the AnalysisBackend</span>
+<span class="sd">    of the Polarbear Collaboration.</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    - ``filename``:{str}</span>
+<span class="sd">        path to the hdf5 file</span>
+<span class="sd">    - ``pol``:{int}</span>
+<span class="sd">      - ``1``: read data for intensity  data;</span>
+<span class="sd">      - ``2``: read data for polarization data;</span>
+<span class="sd">      - ``3``: read  for both intensity and  polarization data;</span>
+
+<span class="sd">    - ``npairs``:{int}</span>
+<span class="sd">        set how many bolo_pairs to read, default is ``None``.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">f</span><span class="o">=</span><span class="n">h5</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s">&quot;r&quot;</span><span class="p">)</span>
+    <span class="n">hp_pixs</span><span class="o">=</span><span class="n">f</span><span class="p">[</span><span class="s">&#39;obspix&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+    <span class="n">n_bolo_pair</span><span class="o">=</span><span class="n">f</span><span class="p">[</span><span class="s">&#39;n_bolo_pair&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+    <span class="n">n_ces</span><span class="o">=</span><span class="n">f</span><span class="p">[</span><span class="s">&#39;n_sample_ces&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+    <span class="k">print</span> <span class="s">&quot;Bolo Pairs: </span><span class="si">%d</span><span class="s"> </span><span class="se">\t</span><span class="s"> CES: </span><span class="si">%d</span><span class="s"> &quot;</span><span class="o">%</span><span class="p">(</span><span class="n">n_bolo_pair</span><span class="p">,</span><span class="n">n_ces</span><span class="p">)</span>
+
+    <span class="n">pixs_pair</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">polang_pair</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">d_pair</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">weight_pair</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">ground_pair</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">if</span> <span class="n">npairs</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">n_to_read</span><span class="o">=</span><span class="n">n_bolo_pair</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">n_to_read</span><span class="o">=</span><span class="n">npairs</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_to_read</span><span class="p">):</span>
+        <span class="n">group</span><span class="o">=</span><span class="n">f</span><span class="p">[</span><span class="s">&#39;bolo_pair_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span>
+        <span class="n">pixs_pair</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="s">&#39;pixel&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">])</span>
+        <span class="n">polang_pair</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="s">&#39;pol_angle&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">])</span>
+        <span class="n">ground_pair</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="s">&#39;ground&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&quot;int&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">pol</span><span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">d_pair</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="s">&#39;sum&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">])</span>
+            <span class="n">weight_pair</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="s">&#39;weight_sum&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">pol</span><span class="o">==</span><span class="mi">3</span> <span class="ow">or</span> <span class="n">pol</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+            <span class="n">d_pair</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="s">&#39;dif&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">])</span>
+            <span class="n">weight_pair</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="s">&#39;weight_dif&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">])</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">d</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">d_pair</span><span class="p">)</span>
+    <span class="n">weight</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">weight_pair</span><span class="p">)</span>
+    <span class="n">polang</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">polang_pair</span><span class="p">)</span>
+    <span class="n">pixs</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">pixs_pair</span><span class="p">)</span>
+    <span class="n">ground</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">ground_pair</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">d</span><span class="p">,</span><span class="n">weight</span><span class="p">,</span><span class="n">polang</span><span class="p">,</span><span class="n">pixs</span><span class="p">,</span><span class="n">hp_pixs</span><span class="p">,</span><span class="n">ground</span><span class="p">,</span><span class="n">n_ces</span>
+</div>
+<div class="viewcode-block" id="read_multiple_ces"><a class="viewcode-back" href="../../utilities.html#utilities.IOfiles.read_multiple_ces">[docs]</a><span class="k">def</span> <span class="nf">read_multiple_ces</span><span class="p">(</span><span class="n">filelist</span><span class="p">,</span><span class="n">pol</span><span class="p">,</span> <span class="n">npairs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">filtersubscan</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read a list of  hdf5 files of multiple CES scans preprocessed by the AnalysisBackend</span>
+<span class="sd">    of the Polarbear Collaboration.</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    - ``filelist``:{list of str}</span>
+<span class="sd">        list containing the path to the hdf5 files</span>
+<span class="sd">    - ``pol``:{int}</span>
+<span class="sd">      - ``1``: read data for intensity  data;</span>
+<span class="sd">      - ``2``: read data for polarization data;</span>
+<span class="sd">      - ``3``: read  for both intensity  and polarization data;</span>
+
+<span class="sd">    - ``npairs``:{int}</span>
+<span class="sd">        set how many bolo_pairs to read, default is ``None``.</span>
+<span class="sd">    - ``filtersubscan``:{bool}</span>
+<span class="sd">        activate the subscan selection on to data (default ``True``).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">filtersubscan</span><span class="p">:</span>
+        <span class="n">readf</span> <span class="o">=</span> <span class="n">read_from_data_with_subscan_resize</span>
+        <span class="n">subscan</span><span class="p">,</span><span class="n">tstart</span><span class="o">=</span><span class="p">[],[]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">readf</span> <span class="o">=</span> <span class="n">read_from_data</span>
+    <span class="n">bolopairs_per_ces</span><span class="p">,</span><span class="n">samples_per_bolopair</span><span class="o">=</span><span class="p">[],[]</span>
+    <span class="n">pixs</span><span class="p">,</span><span class="n">polang</span><span class="p">,</span><span class="n">d</span><span class="p">,</span><span class="n">weight</span><span class="p">,</span><span class="n">ground</span><span class="p">,</span><span class="n">hp_pixs</span><span class="o">=</span><span class="p">[],[],[],[],[],[]</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">filelist</span><span class="p">:</span>
+        <span class="n">outdata</span><span class="o">=</span><span class="n">readf</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="n">pol</span><span class="p">,</span><span class="n">npairs</span><span class="o">=</span><span class="n">npairs</span><span class="p">)</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">outdata</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">weight</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">outdata</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">polang</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">outdata</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">pixs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">outdata</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">ground</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">outdata</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">filtersubscan</span><span class="p">:</span>
+            <span class="n">samples_per_bolopair</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">outdata</span><span class="p">[</span><span class="mi">6</span><span class="p">])</span>
+            <span class="n">bolopairs_per_ces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">outdata</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span>
+            <span class="n">subscan</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">outdata</span><span class="p">[</span><span class="mi">8</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">tstart</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">outdata</span><span class="p">[</span><span class="mi">8</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">hp_pixs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">outdata</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+    <span class="n">flagging_not_in_allCES</span><span class="p">(</span><span class="n">pixs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">filtersubscan</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">d</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">weight</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">polang</span><span class="p">),</span>\
+            <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">pixs</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">hp_pixs</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">ground</span><span class="p">),</span>\
+                    <span class="n">subscan</span><span class="p">,</span><span class="n">tstart</span><span class="p">,</span><span class="n">samples_per_bolopair</span><span class="p">,</span><span class="n">bolopairs_per_ces</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">d</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">weight</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">polang</span><span class="p">),</span>\
+            <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">pixs</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">hp_pixs</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">ground</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="flagging_not_in_allCES"><a class="viewcode-back" href="../../utilities.html#utilities.IOfiles.flagging_not_in_allCES">[docs]</a><span class="k">def</span> <span class="nf">flagging_not_in_allCES</span><span class="p">(</span><span class="n">CES_pixs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Flag all the pixels which are not in common in  the considered  CES.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nces</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">CES_pixs</span><span class="p">)</span>
+    <span class="n">first</span><span class="p">,</span><span class="n">ices</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">CES_pixs</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nces</span><span class="p">):</span>
+        <span class="n">tmp</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">CES_pixs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">tmp</span><span class="o">&lt;</span><span class="n">first</span><span class="p">:</span>
+                <span class="n">first</span><span class="p">,</span><span class="n">ices</span><span class="o">=</span><span class="n">tmp</span><span class="p">,</span><span class="n">i</span>
+    <span class="c">#print &quot;minimum at %d w/ %d&quot;%(ices,first)</span>
+    <span class="n">minimal_ces</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">CES_pixs</span><span class="p">[</span><span class="n">ices</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nces</span><span class="p">):</span>
+        <span class="n">to_flag</span><span class="o">=</span><span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">CES_pixs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">minimal_ces</span> <span class="p">]</span>
+        <span class="n">CES_pixs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">to_flag</span><span class="p">]</span><span class="o">=-</span><span class="mi">1</span>
+    <span class="k">pass</span>
+
+
+
+</div>
+<div class="viewcode-block" id="flagging_subscan"><a class="viewcode-back" href="../../utilities.html#utilities.IOfiles.flagging_subscan">[docs]</a><span class="k">def</span> <span class="nf">flagging_subscan</span><span class="p">(</span><span class="n">unflagged_pix</span><span class="p">,</span><span class="n">subscan</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Flag all the samples outside a subscan.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nsamples</span><span class="o">=</span><span class="n">subscan</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">tstart</span><span class="o">=</span><span class="n">subscan</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">k</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">for</span> <span class="n">t</span><span class="p">,</span><span class="n">n</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">tstart</span><span class="p">,</span><span class="n">nsamples</span><span class="p">):</span>
+        <span class="n">unflagged_pix</span><span class="p">[</span><span class="n">k</span><span class="p">:</span><span class="n">t</span><span class="p">]</span><span class="o">=-</span><span class="mi">1</span>
+        <span class="n">k</span><span class="o">=</span><span class="n">t</span><span class="o">+</span><span class="n">n</span>
+    <span class="c">#return unflag_pix</span>
+</div>
+<div class="viewcode-block" id="read_from_data_with_subscan_resize"><a class="viewcode-back" href="../../utilities.html#utilities.IOfiles.read_from_data_with_subscan_resize">[docs]</a><span class="k">def</span> <span class="nf">read_from_data_with_subscan_resize</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">pol</span><span class="p">,</span><span class="n">npairs</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read a hdf5 file preprocessed by the AnalysisBackend</span>
+<span class="sd">    of the Polarbear Collaboration by considering, as chunks of data, only the</span>
+<span class="sd">    subscan samples.</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    - ``filename``:{str}</span>
+<span class="sd">        path to the hdf5 file</span>
+<span class="sd">    - ``pol``:{int}</span>
+<span class="sd">      - ``1``: read data for temperature only data;</span>
+<span class="sd">      - ``2,3``: read  for polarization data;</span>
+
+<span class="sd">    - ``npairs``:{int}</span>
+<span class="sd">        set how many bolo_pairs to read, default is ``None``.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">f</span><span class="o">=</span><span class="n">h5</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s">&quot;r&quot;</span><span class="p">)</span>
+    <span class="n">hp_pixs</span><span class="o">=</span><span class="n">f</span><span class="p">[</span><span class="s">&#39;obspix&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+    <span class="n">n_bolo_pair</span><span class="o">=</span><span class="n">f</span><span class="p">[</span><span class="s">&#39;n_bolo_pair&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+    <span class="n">n_ces</span><span class="o">=</span><span class="n">f</span><span class="p">[</span><span class="s">&#39;n_sample_ces&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+    <span class="n">subscan</span><span class="o">=</span><span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="s">&#39;subscans/n_sample&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">],</span><span class="n">f</span><span class="p">[</span><span class="s">&#39;subscans/t_start&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]]</span>
+    <span class="k">print</span> <span class="s">&quot;Bolo Pairs in this CES : </span><span class="si">%d</span><span class="s"> </span><span class="se">\t</span><span class="s"> #samples per Bolo Pairs: </span><span class="si">%d</span><span class="s"> &quot;</span><span class="o">%</span><span class="p">(</span><span class="n">n_bolo_pair</span><span class="p">,</span><span class="n">n_ces</span><span class="p">)</span>
+    <span class="n">pixs_pair</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">polang_pair</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">d_pair</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">weight_pair</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">ground_pair</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">if</span> <span class="n">npairs</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">n_to_read</span><span class="o">=</span><span class="n">n_bolo_pair</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">n_to_read</span><span class="o">=</span><span class="n">npairs</span>
+        <span class="k">print</span> <span class="s">&quot;reading </span><span class="si">%d</span><span class="s"> bolopairs&quot;</span><span class="o">%</span><span class="n">n_to_read</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_to_read</span><span class="p">):</span>
+        <span class="n">group</span><span class="o">=</span><span class="n">f</span><span class="p">[</span><span class="s">&#39;bolo_pair_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span>
+        <span class="n">pix</span> <span class="o">=</span><span class="n">group</span><span class="p">[</span><span class="s">&#39;pixel&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+        <span class="n">flagging_subscan</span><span class="p">(</span><span class="n">pix</span><span class="p">,</span><span class="n">subscan</span><span class="p">)</span>
+        <span class="n">pixs_pair</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pix</span><span class="p">)</span>
+        <span class="n">polang_pair</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="s">&#39;pol_angle&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">])</span>
+        <span class="n">ground_pair</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="s">&#39;ground&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&quot;int&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">pol</span><span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">d_pair</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="s">&#39;sum&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">])</span>
+            <span class="n">weight_pair</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="s">&#39;weight_sum&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">pol</span><span class="o">==</span><span class="mi">3</span> <span class="ow">or</span> <span class="n">pol</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+            <span class="n">d_pair</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="s">&#39;dif&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">])</span>
+            <span class="n">weight_pair</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="s">&#39;weight_dif&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">])</span>
+
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">d</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">d_pair</span><span class="p">)</span>
+    <span class="n">weight</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">weight_pair</span><span class="p">)</span>
+    <span class="n">polang</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">polang_pair</span><span class="p">)</span>
+    <span class="n">pixs</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">pixs_pair</span><span class="p">)</span>
+    <span class="n">ground</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">ground_pair</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">d</span><span class="p">,</span><span class="n">weight</span><span class="p">,</span><span class="n">polang</span><span class="p">,</span><span class="n">pixs</span><span class="p">,</span><span class="n">hp_pixs</span><span class="p">,</span><span class="n">ground</span><span class="p">,</span><span class="n">n_ces</span><span class="p">,</span><span class="n">n_to_read</span><span class="p">,</span><span class="n">subscan</span>
+
+
+</div>
+<div class="viewcode-block" id="write_ritz_eigenvectors_to_hdf5"><a class="viewcode-back" href="../../utilities.html#utilities.IOfiles.write_ritz_eigenvectors_to_hdf5">[docs]</a><span class="k">def</span> <span class="nf">write_ritz_eigenvectors_to_hdf5</span><span class="p">(</span><span class="n">z</span><span class="p">,</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Save to a file the approximated eigenvectors computed via the :func:`deflationlib.arnoldi`</span>
+<span class="sd">    routine.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">datatype</span><span class="o">=</span><span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span>
+    <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="s">&#39;complex128&#39;</span><span class="p">:</span>
+        <span class="n">dt</span><span class="o">=</span><span class="n">h5</span><span class="o">.</span><span class="n">special_dtype</span><span class="p">(</span><span class="n">vlen</span><span class="o">=</span><span class="n">datatype</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">h5</span><span class="o">.</span><span class="n">h5t</span><span class="o">.</span><span class="n">IEEE_F64BE</span>
+
+    <span class="n">size_eigenvectors</span><span class="p">,</span><span class="n">n_eigenvals</span><span class="o">=</span><span class="n">z</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">f</span><span class="o">=</span><span class="n">h5</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s">&quot;w&quot;</span><span class="p">)</span>
+    <span class="n">eigenvect_group</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s">&quot;Ritz_eigenvectors&quot;</span><span class="p">)</span>
+    <span class="n">eigenvect_group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s">&#39;n_eigenvectors&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">n_eigenvals</span><span class="p">),</span>\
+                                    <span class="n">dtype</span><span class="o">=</span><span class="n">h5</span><span class="o">.</span><span class="n">h5t</span><span class="o">.</span><span class="n">STD_I32BE</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">n_eigenvals</span><span class="p">)</span>
+
+    <span class="n">eig</span><span class="o">=</span><span class="n">eigenvect_group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s">&quot;Eigenvectors&quot;</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">z</span><span class="p">,</span><span class="n">chunks</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="read_ritz_eigenvectors_from_hdf5"><a class="viewcode-back" href="../../utilities.html#utilities.IOfiles.read_ritz_eigenvectors_from_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_ritz_eigenvectors_from_hdf5</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    read from hdf5 file the approximated eigenvectors</span>
+<span class="sd">    related to the deflation subspace.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">f</span><span class="o">=</span><span class="n">h5</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s">&quot;r&quot;</span><span class="p">)</span>
+    <span class="n">n_eigenvals</span><span class="o">=</span><span class="n">f</span><span class="p">[</span><span class="s">&quot;Ritz_eigenvectors/n_eigenvectors&quot;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+    <span class="n">eigens</span><span class="o">=</span><span class="n">f</span><span class="p">[</span><span class="s">&quot;Ritz_eigenvectors/Eigenvectors&quot;</span><span class="p">]</span>
+    <span class="n">z</span><span class="o">=</span><span class="n">eigens</span><span class="p">[</span><span class="o">...</span><span class="p">]</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">z</span><span class="p">,</span><span class="n">n_eigenvals</span>
+</div>
+<div class="viewcode-block" id="read_obspix_from_hdf5"><a class="viewcode-back" href="../../utilities.html#utilities.IOfiles.read_obspix_from_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_obspix_from_hdf5</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    read from hdf5 file the obspix array containing</span>
+<span class="sd">    the observed pixels in the Healpix ordering .</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">f</span><span class="o">=</span><span class="n">h5</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s">&quot;r&quot;</span><span class="p">)</span>
+    <span class="n">obsp</span><span class="o">=</span><span class="n">f</span><span class="p">[</span><span class="s">&quot;obspix&quot;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">obsp</span></div>
+<div class="viewcode-block" id="write_obspix_to_hdf5"><a class="viewcode-back" href="../../utilities.html#utilities.IOfiles.write_obspix_to_hdf5">[docs]</a><span class="k">def</span> <span class="nf">write_obspix_to_hdf5</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">obspix</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Save into hdf5 file the obspix array</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">f</span><span class="o">=</span><span class="n">h5</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s">&quot;w&quot;</span><span class="p">)</span>
+    <span class="n">det</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s">&quot;obspix&quot;</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">obspix</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">h5</span><span class="o">.</span><span class="n">h5t</span><span class="o">.</span><span class="n">STD_I32BE</span> <span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="write_to_hdf5"><a class="viewcode-back" href="../../utilities.html#utilities.IOfiles.write_to_hdf5">[docs]</a><span class="k">def</span> <span class="nf">write_to_hdf5</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">obs_pixels</span><span class="p">,</span><span class="n">noise_values</span><span class="p">,</span><span class="n">d</span><span class="p">,</span><span class="n">phi</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Write onto hdf5 file whose datasets are created by the routine</span>
+<span class="sd">    :func:`utilities_functions.system_setup`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">f</span><span class="o">=</span><span class="n">h5</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s">&quot;w&quot;</span><span class="p">)</span>
+    <span class="n">group</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s">&quot;bolo_pair&quot;</span><span class="p">)</span>
+
+    <span class="n">pixs</span><span class="o">=</span><span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s">&#39;pixel&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">obs_pixels</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">h5</span><span class="o">.</span><span class="n">h5t</span><span class="o">.</span><span class="n">STD_I32BE</span><span class="p">)</span>
+    <span class="n">weight</span><span class="o">=</span><span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s">&#39;weight&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">noise_values</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="n">h5</span><span class="o">.</span><span class="n">h5t</span><span class="o">.</span><span class="n">IEEE_F64BE</span><span class="p">)</span>
+    <span class="n">det</span><span class="o">=</span><span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s">&#39;sum&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">d</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="n">h5</span><span class="o">.</span><span class="n">h5t</span><span class="o">.</span><span class="n">IEEE_F64BE</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">phi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">polang</span><span class="o">=</span><span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s">&#39;pol_angle&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">phi</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">h5</span><span class="o">.</span><span class="n">h5t</span><span class="o">.</span><span class="n">IEEE_F64BE</span><span class="p">)</span>
+        <span class="n">polang</span><span class="p">[</span><span class="o">...</span><span class="p">]</span><span class="o">=</span><span class="n">phi</span>
+
+    <span class="n">pixs</span><span class="p">[</span><span class="o">...</span><span class="p">]</span><span class="o">=</span><span class="n">obs_pixels</span>
+    <span class="n">weight</span><span class="p">[</span><span class="o">...</span><span class="p">]</span><span class="o">=</span><span class="n">noise_values</span>
+    <span class="n">det</span><span class="p">[</span><span class="o">...</span><span class="p">]</span><span class="o">=</span><span class="n">d</span>
+
+
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="show_matrix_form"><a class="viewcode-back" href="../../utilities.html#utilities.IOfiles.show_matrix_form">[docs]</a><span class="k">def</span> <span class="nf">show_matrix_form</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Explicit the components of the Linear Operator A as a matrix.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+    <span class="n">matr</span><span class="o">=</span><span class="n">A</span><span class="o">.</span><span class="n">to_array</span><span class="p">()</span>
+    <span class="c">#print matr</span>
+    <span class="n">maxval</span><span class="o">=</span><span class="n">matr</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">matr</span><span class="o">/=</span><span class="n">maxval</span>
+    <span class="n">imgplot</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">matr</span><span class="p">,</span><span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span><span class="n">vmin</span><span class="o">=</span><span class="n">matr</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">imgplot</span><span class="o">.</span><span class="n">set_cmap</span><span class="p">(</span><span class="s">&#39;spectral&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="read_from_hdf5"><a class="viewcode-back" href="../../utilities.html#utilities.IOfiles.read_from_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_from_hdf5</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read from a hdf5 file whose datasets are created by the routine :func:`utilities_functions.system_setup`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">f</span><span class="o">=</span><span class="n">h5</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s">&quot;r&quot;</span><span class="p">)</span>
+
+    <span class="n">obs_pix</span><span class="o">=</span><span class="n">f</span><span class="p">[</span><span class="s">&#39;/bolo_pair/pixel&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+    <span class="n">polang</span><span class="o">=</span><span class="n">f</span><span class="p">[</span><span class="s">&#39;/bolo_pair/pol_angle&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+    <span class="n">weight</span><span class="o">=</span><span class="n">f</span><span class="p">[</span><span class="s">&#39;/bolo_pair/weight&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+
+    <span class="n">det</span><span class="o">=</span><span class="n">f</span><span class="p">[</span><span class="s">&#39;bolo_pair/sum&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">det</span><span class="p">,</span><span class="n">obs_pix</span><span class="p">,</span><span class="n">polang</span><span class="p">,</span><span class="n">weight</span>
+</div>
+<div class="viewcode-block" id="plot_histogram_eigenvalues"><a class="viewcode-back" href="../../utilities.html#utilities.IOfiles.plot_histogram_eigenvalues">[docs]</a><span class="k">def</span> <span class="nf">plot_histogram_eigenvalues</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    save a plot containing an histogram  of the eigenvalues ``z``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+    <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">rc</span>
+
+    <span class="n">histo</span><span class="p">,</span><span class="n">edges</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">z</span><span class="p">),</span><span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span><span class="n">normed</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">bins</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="n">edges</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="n">edges</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="mf">2.</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">histo</span><span class="p">))])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s">&#39;log&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s">&#39;log&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Eigenvalues Histogram&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">r&#39;$\lambda_i $&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">histo</span><span class="p">,</span><span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s">&#39;data/eigenvalues_histogram.png&#39;</span><span class="p">)</span>
+    <span class="k">pass</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+        </div>
+        <div class="sidebar">
+          <h3>Table Of Contents</h3>
+          <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">Modules</a></li>
+</ul>
+
+          <h3 style="margin-top: 1.5em;">Search</h3>
+          <form class="search" action="../../search.html" method="get">
+            <input type="text" name="q" />
+            <input type="submit" value="Go" />
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+          </form>
+          <p class="searchtip" style="font-size: 90%">
+            Enter search terms or a module, class or function name.
+          </p>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+    <div class="footer-wrapper">
+      <div class="footer">
+        <div class="left">
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |
+          <a href="../../genindex.html" title="General Index"
+             >index</a>
+        </div>
+
+        <div class="right">
+          
+    <div class="footer">
+        &copy; Copyright 2016, Giuseppe Puglisi.
+      Last updated on Jun 28, 2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+  </body>
+</html>
