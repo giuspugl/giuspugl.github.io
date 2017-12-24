@@ -1,0 +1,1056 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Module contents &mdash; PS4C 0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="PS4C 0.0 documentation" href="index.html" />
+    <link rel="next" title="Jupyter Notebook Tutorial" href="Forecasts.html" />
+    <link rel="prev" title="PS4C" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="Forecasts.html" title="Jupyter Notebook Tutorial"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="PS4C"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PS4C 0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-PS4Cast">
+<span id="module-contents"></span><h1>Module contents<a class="headerlink" href="#module-PS4Cast" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="PS4Cast.Experiment">
+<em class="property">class </em><tt class="descclassname">PS4Cast.</tt><tt class="descname">Experiment</tt><big>(</big><em>ID</em>, <em>sensitivity</em>, <em>frequency</em>, <em>fwhm</em>, <em>fsky</em>, <em>nchannels=1</em>, <em>units_sensitivity='uKarcmin'</em>, <em>units_beam='arcmin'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/PS4Cast.html#Experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PS4Cast.Experiment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></a></p>
+<p>Initialize a class encodes all the nominal specifics of an experiment, i.e. resolution, sensitivity, size of the observational area,
+frequency channels.</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>ID</cite>:{string}</dt>
+<dd><p class="first last">name of the experiment, needed for plotting and printing info.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>frequency</cite>:{float or sequence}</dt>
+<dd><p class="first last">the frequency of channels (assumed GHz)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>nchannels</cite>:{int}</dt>
+<dd><p class="first last">number of frequency channels</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>fwhm</cite>:{float or sequence}</dt>
+<dd><p class="first last">the the Full Width at Half Maximum resolution, units can be deg, arcmin, or arcsec, set the keyword argument <tt class="docutils literal"><span class="pre">units_beam</span></tt>,
+(Default= <tt class="docutils literal"><span class="pre">arcmin</span></tt>)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>sensitivity</cite>:{float or sequence}</dt>
+<dd><p class="first last">the sensitivity at each channel. Default units are <img class="math" src="_images/math/4612f56ddba241157c18130df27d43d008e79857.png" alt="\mu K arcmin"/>, but one can change different units by the <tt class="docutils literal"><span class="pre">units_sensitivity</span></tt>
+keyword.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>fsky</cite>:{float}</dt>
+<dd><p class="first last">percentage of the sky observed by the experiment.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If <tt class="docutils literal"><span class="pre">units_sensitivity=uKsqrts</span></tt> then another keyword must be set, the observational time.</p>
+</div>
+<dl class="method">
+<dt id="PS4Cast.Experiment.Jyperbeam2Jy">
+<tt class="descname">Jyperbeam2Jy</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/PS4Cast.html#Experiment.Jyperbeam2Jy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PS4Cast.Experiment.Jyperbeam2Jy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the <img class="math" src="_images/math/9227b45b2772742732cf5e676f5f7ce80ef3782a.png" alt="3\sigma"/> detection flux limit  from the brightness ensitivity.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PS4Cast.Experiment.get_pixelsize">
+<tt class="descname">get_pixelsize</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/PS4Cast.html#Experiment.get_pixelsize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PS4Cast.Experiment.get_pixelsize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given the fwhm, it computes the optimal (Healpix) pixelization  such that the pixel  size is about 3 times smaller than the resolution.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PS4Cast.Experiment.print_info">
+<tt class="descname">print_info</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/PS4Cast.html#Experiment.print_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PS4Cast.Experiment.print_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="PS4Cast.Experiment.uKarcmin2Jy">
+<tt class="descname">uKarcmin2Jy</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/PS4Cast.html#Experiment.uKarcmin2Jy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PS4Cast.Experiment.uKarcmin2Jy" title="Permalink to this definition">¶</a></dt>
+<dd><p>compute the <img class="math" src="_images/math/9227b45b2772742732cf5e676f5f7ce80ef3782a.png" alt="3\sigma"/> detection flux limit  from the sensitivity in <img class="math" src="_images/math/4612f56ddba241157c18130df27d43d008e79857.png" alt="\mu K arcmin"/>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PS4Cast.Experiment.uKsrts2Jy">
+<tt class="descname">uKsrts2Jy</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/PS4Cast.html#Experiment.uKsrts2Jy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PS4Cast.Experiment.uKsrts2Jy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the <img class="math" src="_images/math/9227b45b2772742732cf5e676f5f7ce80ef3782a.png" alt="3\sigma"/> detection flux limit  from the sensitivity in <img class="math" src="_images/math/5d27d6e03f66c74c9f14563ae9dd0b76d0819bb3.png" alt="\mu K \sqrt{s}"/> computed from the
+Noise Effective Temperature computed on the whole array of focal plane detectors.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="PS4Cast.Forecaster">
+<em class="property">class </em><tt class="descclassname">PS4Cast.</tt><tt class="descname">Forecaster</tt><big>(</big><em>Experiment</em>, <em>sigmadetection=5.0</em>, <em>ps4c_dir='./'</em><big>)</big><a class="reference internal" href="_modules/PS4Cast.html#Forecaster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PS4Cast.Forecaster" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></a></p>
+<p>Given the specifics of an experiment, it  forecasts the contribution of detected and undetected point sources (only Radio Quasars are considered so far). It inheritates the attributes from the <a class="reference internal" href="#PS4Cast.Experiment" title="PS4Cast.Experiment"><tt class="xref py py-class docutils literal"><span class="pre">Experiment</span></tt></a>, needed to be initialized, the level
+of point source detection. The forecasts start when the <a class="reference internal" href="#PS4Cast.Forecaster" title="PS4Cast.Forecaster"><tt class="xref py py-class docutils literal"><span class="pre">Forecaster</span></tt></a> class is called.</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><p class="first"><cite>Experiment</cite>:{<a class="reference internal" href="#PS4Cast.Experiment" title="PS4Cast.Experiment"><tt class="xref py py-class docutils literal"><span class="pre">Experiment</span></tt></a>}</p>
+</li>
+<li><dl class="first docutils">
+<dt><cite>sigmadetection</cite>:{float}</dt>
+<dd><p class="first last">set the level above one can consider point sources as <em>detected</em>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>ps4c_dir</cite>:{string}</dt>
+<dd><p class="first last">path to the <tt class="docutils literal"><span class="pre">PS4C/data</span></tt> and <tt class="docutils literal"><span class="pre">PS4C/model</span></tt> folders</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="method">
+<dt id="PS4Cast.Forecaster.forecast_nsources_in_the_patch">
+<tt class="descname">forecast_nsources_in_the_patch</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/PS4Cast.html#Forecaster.forecast_nsources_in_the_patch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PS4Cast.Forecaster.forecast_nsources_in_the_patch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given the size of the observational patch it computes how many sources should be detected above the detection flux limit.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PS4Cast.Forecaster.forecast_pi2scaling">
+<tt class="descname">forecast_pi2scaling</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/PS4Cast.html#Forecaster.forecast_pi2scaling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PS4Cast.Forecaster.forecast_pi2scaling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the best fit parameters of the linear fit <img class="math" src="_images/math/a67baf085ee446d2c52138e8d5a5b297581af4ac.png" alt="&lt; Pi^2 &gt;  = A x +B"/></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PS4Cast.Forecaster.get_differential_number_counts">
+<tt class="descname">get_differential_number_counts</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/PS4Cast.html#Forecaster.get_differential_number_counts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PS4Cast.Forecaster.get_differential_number_counts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given the frequency channels finds the total intensity  number counts from predictions of  De Zotti et al. 2005 model (prediction at
+several frequencies are provided in <cite>./PS4C/model</cite> directory) and computes the polarization number counts by deconvolving
+the intensity number counts with the probability distribution of fractional polarization.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PS4Cast.Forecaster.get_differential_number_counts_tucci">
+<tt class="descname">get_differential_number_counts_tucci</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/PS4Cast.html#Forecaster.get_differential_number_counts_tucci"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PS4Cast.Forecaster.get_differential_number_counts_tucci" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given the frequency channels finds the total intensity  number counts from predictions of  Tucci et al. 2011 model and computes the
+polarization number counts as in <a class="reference internal" href="#PS4Cast.Forecaster.get_differential_number_counts" title="PS4Cast.Forecaster.get_differential_number_counts"><tt class="xref py py-func docutils literal"><span class="pre">get_differential_number_counts()</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PS4Cast.Forecaster.get_npolsources_from_flux">
+<tt class="descname">get_npolsources_from_flux</tt><big>(</big><em>minflux=None</em><big>)</big><a class="reference internal" href="_modules/PS4Cast.html#Forecaster.get_npolsources_from_flux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PS4Cast.Forecaster.get_npolsources_from_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>By default, it computes how many polarized  sources should be observed above the  detection limit
+otherwise the sources whose flux &gt;``minflux``.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PS4Cast.Forecaster.plot_integral_numbercounts">
+<tt class="descname">plot_integral_numbercounts</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/PS4Cast.html#Forecaster.plot_integral_numbercounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PS4Cast.Forecaster.plot_integral_numbercounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot integral number counts, i.e.   number of sources above the detection flux per square degree units.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PS4Cast.Forecaster.plot_powerspectra">
+<tt class="descname">plot_powerspectra</tt><big>(</big><em>spectra_to_plot='all'</em>, <em>FG='compsep'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/PS4Cast.html#Forecaster.plot_powerspectra"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PS4Cast.Forecaster.plot_powerspectra" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot CMB and undetected Point sources Power spectra.</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>spectra_to_plot</cite>:{string}</dt>
+<dd><p class="first">a string among:</p>
+<ul class="last simple">
+<li><cite>all</cite>: T, E and B spectra will be shown</li>
+<li><cite>TandB</cite>: T and B spectra</li>
+<li><cite>Tonly</cite>: T spectrum</li>
+<li><cite>Bonly</cite>: B spectrum</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>FG</cite>:{string}</dt>
+<dd><p class="first">show the Galactic foreground  levels, a string among:</p>
+<ul class="last simple">
+<li><cite>compsep</cite>: the 95perc  of  residuals  after component separation</li>
+<li><cite>total</cite>: total amplitude</li>
+<li><cite>none</cite>:  will not be shown</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>kwargs</cite>:</dt>
+<dd><p class="first last">keywords for matplotlib plots.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="PS4Cast.Forecaster.print_info">
+<tt class="descname">print_info</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/PS4Cast.html#Forecaster.print_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PS4Cast.Forecaster.print_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-pointsource_utilities"></span><dl class="function">
+<dt id="pointsource_utilities.Kcmb2Krj">
+<tt class="descclassname">pointsource_utilities.</tt><tt class="descname">Kcmb2Krj</tt><big>(</big><em>nu</em>, <em>Tcmb</em><big>)</big><a class="reference internal" href="_modules/pointsource_utilities.html#Kcmb2Krj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pointsource_utilities.Kcmb2Krj" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert physical temperature  into the antenna one.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pointsource_utilities.Krj2Kcmb">
+<tt class="descclassname">pointsource_utilities.</tt><tt class="descname">Krj2Kcmb</tt><big>(</big><em>nu</em>, <em>Trj</em><big>)</big><a class="reference internal" href="_modules/pointsource_utilities.html#Krj2Kcmb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pointsource_utilities.Krj2Kcmb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert antenna temperature ( Rayleigh-Jeans) into the physical one</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pointsource_utilities.Krj2brightness">
+<tt class="descclassname">pointsource_utilities.</tt><tt class="descname">Krj2brightness</tt><big>(</big><em>temp</em>, <em>freq</em>, <em>theta_beam</em><big>)</big><a class="reference internal" href="_modules/pointsource_utilities.html#Krj2brightness"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pointsource_utilities.Krj2brightness" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert brightness temperature to brightness measured in [Jy /beam]</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pointsource_utilities.beamsolidangle">
+<tt class="descclassname">pointsource_utilities.</tt><tt class="descname">beamsolidangle</tt><big>(</big><em>theta</em><big>)</big><a class="reference internal" href="_modules/pointsource_utilities.html#beamsolidangle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pointsource_utilities.beamsolidangle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a FWHM resolution <cite>theta</cite> in radians, it computes the solid angle  in steradians</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pointsource_utilities.brightness2Kcmb">
+<tt class="descclassname">pointsource_utilities.</tt><tt class="descname">brightness2Kcmb</tt><big>(</big><em>nu</em>, <em>Ib</em><big>)</big><a class="reference internal" href="_modules/pointsource_utilities.html#brightness2Kcmb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pointsource_utilities.brightness2Kcmb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns conversion factor to pass from <tt class="docutils literal"><span class="pre">Ib</span></tt>  brightness units  to physical temperature at a given frequency <tt class="docutils literal"><span class="pre">nu</span></tt></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pointsource_utilities.brightness2Krj">
+<tt class="descclassname">pointsource_utilities.</tt><tt class="descname">brightness2Krj</tt><big>(</big><em>sigmaS</em>, <em>freq</em>, <em>theta_beam</em><big>)</big><a class="reference internal" href="_modules/pointsource_utilities.html#brightness2Krj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pointsource_utilities.brightness2Krj" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert brightness to brightness temperature</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pointsource_utilities.compute_confusion_limit">
+<tt class="descclassname">pointsource_utilities.</tt><tt class="descname">compute_confusion_limit</tt><big>(</big><em>K</em>, <em>Gamma</em>, <em>omega_b</em>, <em>q=5</em><big>)</big><a class="reference internal" href="_modules/pointsource_utilities.html#compute_confusion_limit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pointsource_utilities.compute_confusion_limit" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>Compute the confusion limit <img class="math" src="_images/math/5c03dad0f167ba3f8c7ecdf4ba4a2691f5096a26.png" alt="S_c=5\sigma_c"/>   by means of the definition in Condon,  1974.</p>
+<div class="math">
+<p><img src="_images/math/19b852ad9f860ce2a7c7069d11c9102f779b22aa.png" alt="\sigma_c = ( {q ^{3- \gamma}} k \Omega_e/({3- \gamma}) )^{1/ (\gamma-1)}"/></p>
+</div><p>where we set <img class="math" src="_images/math/542f311402a5d276bbb1fb75a98da3c97a418627.png" alt="q=5"/> for the <img class="math" src="_images/math/2f5b0a33bcc41d7d96af2f695b6d05415ed72992.png" alt="5\sigma"/> <em>truncation limit</em>.</p>
+</div></blockquote>
+<p><strong>Parameters</strong></p>
+<ul class="simple">
+<li><cite>K</cite>, <cite>Gamma</cite> as computed from <a class="reference internal" href="#pointsource_utilities.fit_numbercounts_w_powerlaw" title="pointsource_utilities.fit_numbercounts_w_powerlaw"><tt class="xref py py-func docutils literal"><span class="pre">fit_numbercounts_w_powerlaw()</span></tt></a>.</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="pointsource_utilities.compute_dNdP">
+<tt class="descclassname">pointsource_utilities.</tt><tt class="descname">compute_dNdP</tt><big>(</big><em>A</em>, <em>mu</em>, <em>sigma</em>, <em>dNdS</em>, <em>S</em>, <em>Np_quad=32</em><big>)</big><a class="reference internal" href="_modules/pointsource_utilities.html#compute_dNdP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pointsource_utilities.compute_dNdP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the convolution of differential number counts with the lognormal distribution function, i.e.</p>
+<div class="math">
+<p><img src="_images/math/e575300868c602534d5c1dcce4f780a76654b1ee.png" alt="n(P) = \int_{P=S_0} ^{\infty} {dS}/ {S} \mathcal{P} (\Pi) n(S)"/></p>
+</div><p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>A, mu, sigma</cite>: {floats}</dt>
+<dd><p class="first last">lognormal best fit values computed from <a class="reference internal" href="#Stats.fitting_lognormal_from_fpol" title="Stats.fitting_lognormal_from_fpol"><tt class="xref py py-func docutils literal"><span class="pre">Stats.fitting_lognormal_from_fpol()</span></tt></a> and <a class="reference internal" href="#Stats.fitting_lognormal_from_fluxes" title="Stats.fitting_lognormal_from_fluxes"><tt class="xref py py-func docutils literal"><span class="pre">Stats.fitting_lognormal_from_fluxes()</span></tt></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>dNdS</cite>:{func}</dt>
+<dd><p class="first last">interpolated differential number counts</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>S</cite>:{array}</dt>
+<dd><p class="first last">flux densities</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>Np_quad</cite>:{int}</dt>
+<dd><p class="first last">number of quadrature points.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p><strong>Returns</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>Pbin</cite>: {array}</dt>
+<dd><p class="first last">polarized fluxes</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>interpolated_dNdP</cite>:{func}</dt>
+<dd><p class="first last">interpolated polarized differential number counts.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="pointsource_utilities.compute_polfrac_scaling">
+<tt class="descclassname">pointsource_utilities.</tt><tt class="descname">compute_polfrac_scaling</tt><big>(</big><em>dir_ps</em>, <em>exclude_HFI_data=True</em>, <em>include_steep=False</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/pointsource_utilities.html#compute_polfrac_scaling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pointsource_utilities.compute_polfrac_scaling" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>Considering observations from several catalogues, it computes the observed  polarization fractions</div></blockquote>
+<p>and fit a lognormal distribution in order to get from the best fit parameters the average
+values of <img class="math" src="_images/math/a3f19fb8cdcc559db0e1e1141e9445c376320c95.png" alt="&lt; \Pi&gt; ,&lt; \Pi^2&gt;, \Pi_{med}"/> and their errors. Once all the datasets have been fitted
+it  computes the scaling of <img class="math" src="_images/math/286432bdb79ed4cbe6585c1286f5274ee0601cfc.png" alt="&lt; \Pi^2&gt;^{1/2}"/> by means of a linear function.</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>dir_ps</cite>: {string}</dt>
+<dd><p class="first last">path to the PS4C data folder</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>exclude_HFI_data</cite>:{bool}</dt>
+<dd><p class="first last">if set to <cite>True</cite> it exclude the data from HFI channels of Planck.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>include_steep</cite>:{bool}</dt>
+<dd><dl class="first last docutils">
+<dt>if set to   <cite>True</cite> it includes in the computation even Steep Spectrum Radio Sources.</dt>
+<dd><p class="first last">We recommend you to use this option <strong>if</strong> you are running at low radio frequencies, i.e. <img class="math" src="_images/math/f68d0f7ae1a64c96ce2b14d253b30664df7727de.png" alt="&lt;20"/> GHz.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</li>
+</ul>
+<p><strong>Returns</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>A, sigmaA</cite>:{float}</dt>
+<dd><p class="first last">the slope and the error on the slope as computed from the linear fit</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>B, sigmaB</cite>:{float}</dt>
+<dd><p class="first last">the constant term fitted from the linear function</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="pointsource_utilities.compute_variance_ratios">
+<tt class="descclassname">pointsource_utilities.</tt><tt class="descname">compute_variance_ratios</tt><big>(</big><em>fsky</em>, <em>dir_ps='./data/'</em><big>)</big><a class="reference internal" href="_modules/pointsource_utilities.html#compute_variance_ratios"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pointsource_utilities.compute_variance_ratios" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a fraction of sky  <img class="math" src="_images/math/9ec1e5b4a9b7e44caac12acb0e509e2afd5117ae.png" alt="f_{sky}"/> if computes the ratio of the variance of the synchrotron and dust maps
+within a patch with size <tt class="docutils literal"><span class="pre">fsky</span></tt> and the one within  <tt class="docutils literal"><span class="pre">fsky0</span></tt> which is the value from  Planck collaboration et al. 2015.X .
+All the considered patches exclude the Galactic plane.</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><p class="first"><cite>fsky</cite>: {float}</p>
+</li>
+<li><dl class="first docutils">
+<dt><cite>dir_ps</cite>:{string}</dt>
+<dd><p class="first last">path to the PS4C data folder</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p><strong>Returns</strong></p>
+<dl class="docutils">
+<dt>-<cite>fs</cite>: {float}</dt>
+<dd>ratio of synchrotron variances</dd>
+<dt>-<cite>fd</cite>: {float}</dt>
+<dd>ratio of thermal dust variances</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pointsource_utilities.estimate_power_spectrum_contribution">
+<tt class="descclassname">pointsource_utilities.</tt><tt class="descname">estimate_power_spectrum_contribution</tt><big>(</big><em>dNdS</em>, <em>nu</em>, <em>omega_b</em>, <em>Smin</em>, <em>Smax</em><big>)</big><a class="reference internal" href="_modules/pointsource_utilities.html#estimate_power_spectrum_contribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pointsource_utilities.estimate_power_spectrum_contribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given differential  number counts <img class="math" src="_images/math/46df2dc5fb8e5e0bb9b525acbd58b01114f62e77.png" alt="dN/dS"/>, estimated at certain  flux densities <img class="math" src="_images/math/dab756a938119c6f33a3f65ebf98474b84d0cf32.png" alt="S\in [S_{min}, S_{max}]"/>,
+it estimates the integral</p>
+<div class="math">
+<p><img src="_images/math/c8c904127e9f22f53f3d9a7582341e7f3ce7c206.png" alt="C= \int _{S_{min}} ^{ S_{max}} dS {n(S)} S^2"/></p>
+</div><p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>dNdS</cite>: {func}</dt>
+<dd><p class="first last">differential number counts interpolated by means of <tt class="xref py py-func docutils literal"><span class="pre">numpy.interpolate.interp1d()</span></tt></p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>` nu`:{float}</dt>
+<dd><p class="first last">frequency</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>omega_b</cite>:{float}</dt>
+<dd><p class="first last">solid angle of the beam</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>Smin</cite> and <cite>Smax</cite>:{float}</dt>
+<dd><p class="first last">range of integration</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="pointsource_utilities.fit_numbercounts_w_powerlaw">
+<tt class="descclassname">pointsource_utilities.</tt><tt class="descname">fit_numbercounts_w_powerlaw</tt><big>(</big><em>S</em>, <em>n</em>, <em>Smax</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/pointsource_utilities.html#fit_numbercounts_w_powerlaw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pointsource_utilities.fit_numbercounts_w_powerlaw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit the differential number counts as a single power law <img class="math" src="_images/math/d6ee4912f245ed4ef193462b4a74ef34f4974cf7.png" alt="dN/dS \propto K S^{-\gamma}"/> up to a maximum flux density.</p>
+<p><strong>Parameters</strong></p>
+<blockquote>
+<div><ul>
+<li><dl class="first docutils">
+<dt><cite>S</cite>: {array}</dt>
+<dd><p class="first last">array of fluxes</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>n</cite>: {function}</dt>
+<dd><p class="first last">differential number counts computed from interpolating number counts from model</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>Smax</cite>: {float}</dt>
+<dd><p class="first last">the flux limit you may want to estimate the power law fit</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<p><strong>Returns</strong></p>
+<ul class="simple">
+<li><cite>K</cite>:{float}</li>
+<li><cite>Gamma</cite>: {float}</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="pointsource_utilities.forecast_Galaxy">
+<tt class="descclassname">pointsource_utilities.</tt><tt class="descname">forecast_Galaxy</tt><big>(</big><em>ell</em>, <em>nu</em>, <em>fsky</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/pointsource_utilities.html#forecast_Galaxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pointsource_utilities.forecast_Galaxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the Galactic contribution in multipole <tt class="docutils literal"><span class="pre">ell</span></tt> , frequency <tt class="docutils literal"><span class="pre">nu</span></tt> and
+fraction of sky <tt class="docutils literal"><span class="pre">fsky</span></tt>   given eq.(22) of  Planck 2015 X data are taken from  table 4, table 5, table 11.</p>
+<p><strong>Parameters</strong></p>
+<ul class="simple">
+<li><cite>ell</cite> : {float or array}
+multipole orders</li>
+<li><cite>nu</cite> :{float}</li>
+<li><cite>fsky</cite>:{float}</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="pointsource_utilities.get_spectral_index">
+<tt class="descclassname">pointsource_utilities.</tt><tt class="descname">get_spectral_index</tt><big>(</big><em>v1</em>, <em>v2</em>, <em>S1</em>, <em>S2</em><big>)</big><a class="reference internal" href="_modules/pointsource_utilities.html#get_spectral_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pointsource_utilities.get_spectral_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the spectral index <img class="math" src="_images/math/d6c96269196d89ce434d564d8bf971a187ec9c7c.png" alt="alpha_{v1} ^{v2}"/>  of fluxes S1, S2 estimated at two different frequencies, v1 and v2.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pointsource_utilities.linfunc">
+<tt class="descclassname">pointsource_utilities.</tt><tt class="descname">linfunc</tt><big>(</big><em>x</em>, <em>m</em>, <em>q</em><big>)</big><a class="reference internal" href="_modules/pointsource_utilities.html#linfunc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pointsource_utilities.linfunc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pointsource_utilities.sigmaf">
+<tt class="descclassname">pointsource_utilities.</tt><tt class="descname">sigmaf</tt><big>(</big><em>P</em>, <em>I</em>, <em>sigmaP</em>, <em>sigmaI</em><big>)</big><a class="reference internal" href="_modules/pointsource_utilities.html#sigmaf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pointsource_utilities.sigmaf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given polarized and intensity flux , P and I and their uncertainties sigmaP and sigmaI, propagates
+the uncertainties to polarization fraction <img class="math" src="_images/math/eaa4eb826193770eeee73140d8caed264330bdce.png" alt="\Pi= P/I"/>.</p>
+</dd></dl>
+
+<span class="target" id="module-PointSources"></span><dl class="class">
+<dt id="PointSources.PointSources">
+<em class="property">class </em><tt class="descclassname">PointSources.</tt><tt class="descname">PointSources</tt><big>(</big><em>idx</em>, <em>catalog</em>, <em>ps_dict</em>, <em>pol_sensitive=True</em><big>)</big><a class="reference internal" href="_modules/PointSources.html#PointSources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PointSources.PointSources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></a></p>
+<dl class="method">
+<dt id="PointSources.PointSources.assign_polerr">
+<tt class="descname">assign_polerr</tt><big>(</big><em>sigmaP</em>, <em>sigmaPuK</em><big>)</big><a class="reference internal" href="_modules/PointSources.html#PointSources.assign_polerr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PointSources.PointSources.assign_polerr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="PointSources.PointSources.assign_polflux">
+<tt class="descname">assign_polflux</tt><big>(</big><em>pol_frac</em><big>)</big><a class="reference internal" href="_modules/PointSources.html#PointSources.assign_polflux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PointSources.PointSources.assign_polflux" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="PointSources.PointSources.forecast_polarization">
+<tt class="descname">forecast_polarization</tt><big>(</big><em>pol_frac</em><big>)</big><a class="reference internal" href="_modules/PointSources.html#PointSources.forecast_polarization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PointSources.PointSources.forecast_polarization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign polarized flux to the source from forecasts, could be either a
+constant value to all the clouds or a value drawn from a distribution.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PointSources.PointSources.get_pol_frac">
+<tt class="descname">get_pol_frac</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/PointSources.html#PointSources.get_pol_frac"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PointSources.PointSources.get_pol_frac" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="PointSources.PointSources.get_polfrac_error">
+<tt class="descname">get_polfrac_error</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/PointSources.html#PointSources.get_polfrac_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PointSources.PointSources.get_polfrac_error" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-IO"></span><dl class="class">
+<dt id="IO.bash_colors">
+<em class="property">class </em><tt class="descclassname">IO.</tt><tt class="descname">bash_colors</tt><a class="reference internal" href="_modules/IO.html#bash_colors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#IO.bash_colors" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="IO.bash_colors.BOLD">
+<tt class="descname">BOLD</tt><em class="property"> = '\x1b[1m'</em><a class="headerlink" href="#IO.bash_colors.BOLD" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IO.bash_colors.ENDC">
+<tt class="descname">ENDC</tt><em class="property"> = '\x1b[0m'</em><a class="headerlink" href="#IO.bash_colors.ENDC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IO.bash_colors.FAIL">
+<tt class="descname">FAIL</tt><em class="property"> = '\x1b[91m'</em><a class="headerlink" href="#IO.bash_colors.FAIL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IO.bash_colors.HEADER">
+<tt class="descname">HEADER</tt><em class="property"> = '\x1b[95m'</em><a class="headerlink" href="#IO.bash_colors.HEADER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IO.bash_colors.OKBLUE">
+<tt class="descname">OKBLUE</tt><em class="property"> = '\x1b[94m'</em><a class="headerlink" href="#IO.bash_colors.OKBLUE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IO.bash_colors.OKGREEN">
+<tt class="descname">OKGREEN</tt><em class="property"> = '\x1b[92m'</em><a class="headerlink" href="#IO.bash_colors.OKGREEN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IO.bash_colors.UNDERLINE">
+<tt class="descname">UNDERLINE</tt><em class="property"> = '\x1b[4m'</em><a class="headerlink" href="#IO.bash_colors.UNDERLINE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="IO.bash_colors.WARNING">
+<tt class="descname">WARNING</tt><em class="property"> = '\x1b[93m'</em><a class="headerlink" href="#IO.bash_colors.WARNING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IO.bash_colors.blue">
+<tt class="descname">blue</tt><big>(</big><em>string</em><big>)</big><a class="reference internal" href="_modules/IO.html#bash_colors.blue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#IO.bash_colors.blue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IO.bash_colors.bold">
+<tt class="descname">bold</tt><big>(</big><em>string</em><big>)</big><a class="reference internal" href="_modules/IO.html#bash_colors.bold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#IO.bash_colors.bold" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IO.bash_colors.fail">
+<tt class="descname">fail</tt><big>(</big><em>string</em><big>)</big><a class="reference internal" href="_modules/IO.html#bash_colors.fail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#IO.bash_colors.fail" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IO.bash_colors.green">
+<tt class="descname">green</tt><big>(</big><em>string</em><big>)</big><a class="reference internal" href="_modules/IO.html#bash_colors.green"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#IO.bash_colors.green" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IO.bash_colors.header">
+<tt class="descname">header</tt><big>(</big><em>string</em><big>)</big><a class="reference internal" href="_modules/IO.html#bash_colors.header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#IO.bash_colors.header" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IO.bash_colors.underline">
+<tt class="descname">underline</tt><big>(</big><em>string</em><big>)</big><a class="reference internal" href="_modules/IO.html#bash_colors.underline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#IO.bash_colors.underline" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="IO.bash_colors.warning">
+<tt class="descname">warning</tt><big>(</big><em>string</em><big>)</big><a class="reference internal" href="_modules/IO.html#bash_colors.warning"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#IO.bash_colors.warning" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="IO.extract_flux_from_planck_catalog">
+<tt class="descclassname">IO.</tt><tt class="descname">extract_flux_from_planck_catalog</tt><big>(</big><em>catalog</em>, <em>freq</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/IO.html#extract_flux_from_planck_catalog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#IO.extract_flux_from_planck_catalog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read PCCS2 catalog at a given frequency.</p>
+<p><strong>Parameters</strong></p>
+<ul class="simple">
+<li><cite>catalog</cite>:{string}</li>
+<li><cite>freq</cite>:{float}</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="IO.project_sources2map">
+<tt class="descclassname">IO.</tt><tt class="descname">project_sources2map</tt><big>(</big><em>ps_list</em>, <em>nside</em>, <em>omega_beam</em>, <em>polarization=False</em>, <em>forecast_pol=None</em>, <em>muK=1000000.0</em><big>)</big><a class="reference internal" href="_modules/IO.html#project_sources2map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#IO.project_sources2map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Project the list of  <a class="reference internal" href="#module-PointSources" title="PointSources"><tt class="xref py py-class docutils literal"><span class="pre">PointSources</span></tt></a> into  a healpix map</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IO.read_IRAM_catalog">
+<tt class="descclassname">IO.</tt><tt class="descname">read_IRAM_catalog</tt><big>(</big><em>filename</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/IO.html#read_IRAM_catalog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#IO.read_IRAM_catalog" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IO.read_VLA_catalog">
+<tt class="descclassname">IO.</tt><tt class="descname">read_VLA_catalog</tt><big>(</big><em>filename</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/IO.html#read_VLA_catalog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#IO.read_VLA_catalog" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IO.read_atca_catalog">
+<tt class="descclassname">IO.</tt><tt class="descname">read_atca_catalog</tt><big>(</big><em>filename</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/IO.html#read_atca_catalog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#IO.read_atca_catalog" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IO.read_galluzzi_fpol_dat">
+<tt class="descclassname">IO.</tt><tt class="descname">read_galluzzi_fpol_dat</tt><big>(</big><em>filename</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/IO.html#read_galluzzi_fpol_dat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#IO.read_galluzzi_fpol_dat" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IO.read_jvas_catalog">
+<tt class="descclassname">IO.</tt><tt class="descname">read_jvas_catalog</tt><big>(</big><em>filename</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/IO.html#read_jvas_catalog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#IO.read_jvas_catalog" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IO.read_number_counts">
+<tt class="descclassname">IO.</tt><tt class="descname">read_number_counts</tt><big>(</big><em>filename</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/IO.html#read_number_counts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#IO.read_number_counts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IO.read_nvss_catalog">
+<tt class="descclassname">IO.</tt><tt class="descname">read_nvss_catalog</tt><big>(</big><em>filename</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/IO.html#read_nvss_catalog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#IO.read_nvss_catalog" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IO.read_ps_selection_from_hdf5">
+<tt class="descclassname">IO.</tt><tt class="descname">read_ps_selection_from_hdf5</tt><big>(</big><em>filename</em><big>)</big><a class="reference internal" href="_modules/IO.html#read_ps_selection_from_hdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#IO.read_ps_selection_from_hdf5" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a list of  <a class="reference internal" href="#module-PointSources" title="PointSources"><tt class="xref py py-class docutils literal"><span class="pre">PointSources</span></tt></a> from a hdf5 binary file.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="IO.read_spass_nvss_catalog">
+<tt class="descclassname">IO.</tt><tt class="descname">read_spass_nvss_catalog</tt><big>(</big><em>filename</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/IO.html#read_spass_nvss_catalog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#IO.read_spass_nvss_catalog" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="IO.search_in_catalogue">
+<tt class="descclassname">IO.</tt><tt class="descname">search_in_catalogue</tt><big>(</big><em>catalogue</em>, <em>minlat</em>, <em>maxlat</em>, <em>minlong</em>, <em>maxlong</em>, <em>coord='EQ'</em>, <em>pol_sensitive=True</em>, <em>LFI=False</em>, <em>verbose=True</em><big>)</big><a class="reference internal" href="_modules/IO.html#search_in_catalogue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#IO.search_in_catalogue" title="Permalink to this definition">¶</a></dt>
+<dd><p>Look for point sources within <img class="math" src="_images/math/76de9aff0651af5d5fdd3495cb83246ed94a69b1.png" alt="b_{min}&lt; b&lt;b_{max}"/> and <img class="math" src="_images/math/df2297fcd793bde2ba830dd53ac5f40d20bc50db.png" alt="\ell_{min}&lt;\ell&lt;\ell_{max}"/> in a catalogue .</p>
+<p><strong>Returns</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>counter</cite>:{int}</dt>
+<dd><p class="first last">number of sources found</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>point_sources</cite>:{list}</dt>
+<dd><p class="first last">list of the point source found within the ranges</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="IO.write_ps_selection_to_hdf5">
+<tt class="descclassname">IO.</tt><tt class="descname">write_ps_selection_to_hdf5</tt><big>(</big><em>ps_list</em>, <em>filename</em><big>)</big><a class="reference internal" href="_modules/IO.html#write_ps_selection_to_hdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#IO.write_ps_selection_to_hdf5" title="Permalink to this definition">¶</a></dt>
+<dd><p>From a list of <a class="reference internal" href="#module-PointSources" title="PointSources"><tt class="xref py py-class docutils literal"><span class="pre">PointSources</span></tt></a> save the list into a hdf5 binary file.</p>
+</dd></dl>
+
+<span class="target" id="module-Stats"></span><dl class="function">
+<dt id="Stats.bootstrap_resampling">
+<tt class="descclassname">Stats.</tt><tt class="descname">bootstrap_resampling</tt><big>(</big><em>I</em>, <em>sigmaI</em>, <em>P</em>, <em>sigmaP</em>, <em>nsamples</em>, <em>upper_limit=False</em><big>)</big><a class="reference internal" href="_modules/Stats.html#bootstrap_resampling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Stats.bootstrap_resampling" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>It performs the bootstrap resampling  from observations. For each group  of values
+(I,P, sigmaI, sigmaP) it resamples <cite>nsamples</cite> values with Gaussian random values <cite>Isamples</cite> and <cite>Psamples</cite>
+with center around I, or P and width sigmaI and sigmaP. If data are upper limit  it resamples by assuming a uniform</div></blockquote>
+<p>distribution of random number from 0 to  <img class="math" src="_images/math/e8418547c0c289af443d1c4245894bdc29cdebc3.png" alt="\sqrt{P^2 +\sigma_P^2}"/>.</p>
+<blockquote>
+<div><p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><a href="#id1"><span class="problematic" id="id2">`</span></a>I, sigmaI, P, sigmaP`={floats}</dt>
+<dd><p class="first last">values for resampling</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>nsamples</cite>:{int}</dt>
+<dd><p class="first last">how many resampling to do</p>
+</dd>
+</dl>
+</li>
+<li><p class="first"><cite>upper_limit</cite>:{bool}</p>
+</li>
+</ul>
+<p><strong>Returns</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>f</cite>:{array}</dt>
+<dd><p class="first last">resampled fractional polarization</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="Stats.chisquare">
+<tt class="descclassname">Stats.</tt><tt class="descname">chisquare</tt><big>(</big><em>obs</em>, <em>exp</em>, <em>sigma</em><big>)</big><a class="reference internal" href="_modules/Stats.html#chisquare"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Stats.chisquare" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="Stats.compute_poissonian_uncertainties">
+<tt class="descclassname">Stats.</tt><tt class="descname">compute_poissonian_uncertainties</tt><big>(</big><em>bc</em>, <em>Ntot</em>, <em>S</em>, <em>perr</em><big>)</big><a class="reference internal" href="_modules/Stats.html#compute_poissonian_uncertainties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Stats.compute_poissonian_uncertainties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Poissonian upper and lower limit uncertainties from Gehrels 1986.</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>bc</cite>:{array}</dt>
+<dd><p class="first last">counts within each bin</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>Ntot</cite>: {int}</dt>
+<dd><p class="first last">total number of data</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>S</cite>: {int}</dt>
+<dd><p class="first last">the confidence level (CL) for uncertainties, we consider S=1, meaning 68% CL, S=2 for the 95%, etc...</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>perr</cite>:{array}</dt>
+<dd><p class="first last">array where upper and lower uncertainties are stored, <cite>shape= 2 x size(bc)</cite>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="Stats.err_p2">
+<tt class="descclassname">Stats.</tt><tt class="descname">err_p2</tt><big>(</big><em>mu</em>, <em>sigma</em>, <em>cov</em><big>)</big><a class="reference internal" href="_modules/Stats.html#err_p2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Stats.err_p2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute errors on <img class="math" src="_images/math/51ace655363f9d26e664920fed46fd56623f95ac.png" alt="&lt; \Pi^2 &gt;"/> propagating uncertainties on  <img class="math" src="_images/math/be5df5dc52a8418e2c3cf5252cf8150954f94fda.png" alt="\mu, \sigma"/>  parameters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Stats.err_pi">
+<tt class="descclassname">Stats.</tt><tt class="descname">err_pi</tt><big>(</big><em>mu</em>, <em>sigma</em>, <em>cov</em><big>)</big><a class="reference internal" href="_modules/Stats.html#err_pi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Stats.err_pi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute errors on <img class="math" src="_images/math/ee3cfdafbf64fdb899ccb04cefa50edc39d76e9e.png" alt="&lt; \Pi &gt;"/> propagating uncertainties on  <img class="math" src="_images/math/be5df5dc52a8418e2c3cf5252cf8150954f94fda.png" alt="\mu, \sigma"/>  parameters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Stats.fitting_lognormal_from_fluxes">
+<tt class="descclassname">Stats.</tt><tt class="descname">fitting_lognormal_from_fluxes</tt><big>(</big><em>flux</em>, <em>polflux</em>, <em>eI</em>, <em>eP</em>, <em>idstring</em>, <em>fig=None</em>, <em>nbins=15</em>, <em>resampling=True</em>, <em>workdir='./'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/Stats.html#fitting_lognormal_from_fluxes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Stats.fitting_lognormal_from_fluxes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit logrnormal distribution of fractional  polarization from catalog encoding total intensity and polarized fluxes.</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>flux, eI</cite>:{array}</dt>
+<dd><p class="first last">total intensity fluxes and errors</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>polflux, eP</cite>:{array}</dt>
+<dd><p class="first last">polarization flux and errors</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>idstring</cite>: {string}</dt>
+<dd><p class="first last">string used for plotting</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>fig</cite>:{int}</dt>
+<dd><p class="first last">id of figure</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>nbins</cite>:{int}</dt>
+<dd><p class="first last">fractional polarization histogram bins</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>resampling</cite>:{bool}</dt>
+<dd><p class="first last">if <cite>True</cite> resample the catalog with 1000 resampling, otherwise it does not.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>workdir</cite>:{string}</dt>
+<dd><p class="first last">path to store plots and files.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>saveplot</cite>:{string}</dt>
+<dd><p class="first last">name and format to store the plot of the lognormal fit in <cite>workdir</cite></p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>bestfitparams2file</cite>:{bool}</dt>
+<dd><p class="first last">save the computed best fit parameters, the average fractional polarizations to binary file <cite>*.npy</cite> in <cite>workdir</cite>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p><strong>Returns</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>Pim, Pi2, Pi</cite>:{floats}</dt>
+<dd><p class="first last"><img class="math" src="_images/math/d175cdb66393869751e8ffb4267eef5912808167.png" alt="\Pi_{med},&lt; \Pi^2 &gt;,&lt; \Pi &gt;"/></p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>deltapim, deltap2 deltap</cite></dt>
+<dd><p class="first last">errors on the computed quantities.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="Stats.fitting_lognormal_from_fpol">
+<tt class="descclassname">Stats.</tt><tt class="descname">fitting_lognormal_from_fpol</tt><big>(</big><em>fpol</em>, <em>errfpol</em>, <em>flags</em>, <em>idstring</em>, <em>fig=None</em>, <em>nbins=15</em>, <em>resampling=True</em>, <em>workdir='./'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/Stats.html#fitting_lognormal_from_fpol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Stats.fitting_lognormal_from_fpol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit logrnormal distribution of fractional  polarization from catalog encoding fractional polarization and errors on it.</p>
+<p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>pol</cite>:{array}</dt>
+<dd><p class="first last">fractional polarization</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>errfpol</cite>:{array}</dt>
+<dd><p class="first last">errors of fractional polariz.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>flag</cite>:{array}</dt>
+<dd><p class="first last">if <cite>flag=1 ` or `flag=True</cite> it means that data are flagged and they are considered as upper limits.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>The rest of the parameters are the very same as in <a class="reference internal" href="#Stats.fitting_lognormal_from_fluxes" title="Stats.fitting_lognormal_from_fluxes"><tt class="xref py py-func docutils literal"><span class="pre">fitting_lognormal_from_fluxes()</span></tt></a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Stats.lognormal_distribution">
+<tt class="descclassname">Stats.</tt><tt class="descname">lognormal_distribution</tt><big>(</big><em>X</em>, <em>A</em>, <em>Xm</em>, <em>sigma</em><big>)</big><a class="reference internal" href="_modules/Stats.html#lognormal_distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Stats.lognormal_distribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute log-normal distribution on <cite>X</cite>:</p>
+<div class="math">
+<p><img src="_images/math/55d6e2f66625b086a1ea6c3286e2e5c50fdfaa99.png" alt="\mathcal{P} (\Pi ) =A/ (\sqrt{2\pi \sigma^2} \Pi)  \exp [  - ( \ln(\Pi /  \mu))^2 /{2\sigma^2} ]"/></p>
+</div><p><strong>Parameters</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>X</cite>:{array or float}</dt>
+<dd><p class="first last">polarization fraction array</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><cite>A</cite>:{float}</dt>
+<dd><p class="first last">constant</p>
+</dd>
+</dl>
+</li>
+<li><p class="first"><cite>Xm</cite>:{float}</p>
+</li>
+<li><p class="first"><cite>sigma</cite>:{float}</p>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="Stats.pi">
+<tt class="descclassname">Stats.</tt><tt class="descname">pi</tt><big>(</big><em>mu</em>, <em>sigma</em>, <em>apply_correction=False</em><big>)</big><a class="reference internal" href="_modules/Stats.html#pi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Stats.pi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute  <img class="math" src="_images/math/ee3cfdafbf64fdb899ccb04cefa50edc39d76e9e.png" alt="&lt; \Pi &gt;"/> from <img class="math" src="_images/math/be5df5dc52a8418e2c3cf5252cf8150954f94fda.png" alt="\mu, \sigma"/> lognormal best fit parameters, following Battye et al. 2011.</p>
+<div class="math">
+<p><img src="_images/math/923c12f47bc34d3ef618ba6b18746b564b669f6a.png" alt="&lt;\Pi&gt; = \mu e^{\sigma^2/2}"/></p>
+</div></dd></dl>
+
+<dl class="function">
+<dt id="Stats.pi2">
+<tt class="descclassname">Stats.</tt><tt class="descname">pi2</tt><big>(</big><em>mu</em>, <em>sigma</em>, <em>apply_correction=False</em><big>)</big><a class="reference internal" href="_modules/Stats.html#pi2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Stats.pi2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute  <img class="math" src="_images/math/51ace655363f9d26e664920fed46fd56623f95ac.png" alt="&lt; \Pi^2 &gt;"/> from <img class="math" src="_images/math/be5df5dc52a8418e2c3cf5252cf8150954f94fda.png" alt="\mu, \sigma"/> lognormal best fit parameters, following Battye et al. 2011.</p>
+<div class="math">
+<p><img src="_images/math/6c6c7a64f7331f48334a6cd1ad210246f53b75dd.png" alt="&lt;\Pi^2 &gt; = \mu^2 e^{2\sigma^2}"/></p>
+</div></dd></dl>
+
+<dl class="function">
+<dt id="Stats.pimed">
+<tt class="descclassname">Stats.</tt><tt class="descname">pimed</tt><big>(</big><em>mu</em>, <em>sigma</em>, <em>apply_correction=False</em><big>)</big><a class="reference internal" href="_modules/Stats.html#pimed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Stats.pimed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute  <img class="math" src="_images/math/b3af310db4072ad4aeb22fa62785f1686379fa11.png" alt="\Pi_{med}"/> from <img class="math" src="_images/math/be5df5dc52a8418e2c3cf5252cf8150954f94fda.png" alt="\mu, \sigma"/> lognormal best fit parameters, following Battye et al. 2011.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Stats.resampling_fpol">
+<tt class="descclassname">Stats.</tt><tt class="descname">resampling_fpol</tt><big>(</big><em>fpol</em>, <em>sigma</em>, <em>flag</em>, <em>nresampl=100</em><big>)</big><a class="reference internal" href="_modules/Stats.html#resampling_fpol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Stats.resampling_fpol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resampling a catalogue starting from fractional polarization values, errors and flags into the data. Flags identify which data have to be
+considered as upper limits.</p>
+<p><strong>Parameters</strong></p>
+<ul class="simple">
+<li><cite>fpol</cite>:{float}</li>
+<li><cite>sigma</cite>:{float}</li>
+<li><cite>flag</cite>:{bool}</li>
+<li><cite>nresampl</cite>:{int}</li>
+</ul>
+<p>how many resampling to do</p>
+<p><strong>Returns</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt><cite>fpolres</cite>:{array}</dt>
+<dd><p class="first last">array of resampled fractional polarizations.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">PS4C</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="Forecasts.html"
+                        title="next chapter">Jupyter Notebook Tutorial</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/modules.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="Forecasts.html" title="Jupyter Notebook Tutorial"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="PS4C"
+             >previous</a> |</li>
+        <li><a href="index.html">PS4C 0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2017, Giuseppe Puglisi.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

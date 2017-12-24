@@ -1,0 +1,30 @@
+.. PS4C documentation master file, created by
+   sphinx-quickstart on Fri Dec 22 15:38:35 2017.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+PS4C
+====
+
+Point Source ForeCast PS4C is a package aimed at forecasting the contribution of detected and undetected extra-galactic radio sources to Cosmic Microwave Background measurements. Both intensity and polarized emissions are considered and the forecast deliver the level of contamination up to the angular power spectrum level. Download the code from `<https://gitlab.com/giuse.puglisi/PS4C>`_.
+
+.. image:: 
+	m87_vla.jpg
+	:scale: 50%
+	:align: right
+Contents:
+
+.. toctree::
+   :maxdepth: 2
+
+   modules
+   Forecasts
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+

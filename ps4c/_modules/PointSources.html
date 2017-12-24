@@ -1,0 +1,235 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PointSources &mdash; PS4C 0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="PS4C 0.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">PS4C 0.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for PointSources</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#   PointSources.PY</span>
+<span class="c">#   module to initialize point source collections.</span>
+<span class="c">#</span>
+<span class="c">#   date: 2017-12-21</span>
+<span class="c">#   author: GIUSEPPE PUGLISI</span>
+<span class="c">#</span>
+<span class="c">#   Copyright (C) 2017   Giuseppe Puglisi    giuspugl@sissa.it</span>
+<span class="c">#</span>
+
+
+
+<span class="kn">from</span> <span class="nn">IO</span> <span class="kn">import</span> <span class="o">*</span>
+
+<div class="viewcode-block" id="PointSources"><a class="viewcode-back" href="../modules.html#PointSources.PointSources">[docs]</a><span class="k">class</span> <span class="nc">PointSources</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+<div class="viewcode-block" id="PointSources.assign_polerr"><a class="viewcode-back" href="../modules.html#PointSources.PointSources.assign_polerr">[docs]</a>	<span class="k">def</span> <span class="nf">assign_polerr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigmaP</span><span class="p">,</span><span class="n">sigmaPuK</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">polerr</span><span class="o">=</span><span class="n">sigmaP</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">polerr_uK</span><span class="o">=</span><span class="n">sigmaPuK</span>
+</div>
+<div class="viewcode-block" id="PointSources.assign_polflux"><a class="viewcode-back" href="../modules.html#PointSources.PointSources.assign_polflux">[docs]</a>	<span class="k">def</span> <span class="nf">assign_polflux</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pol_frac</span><span class="p">):</span>
+		<span class="n">fluxerr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">polerr</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolved</span><span class="p">:</span>
+			<span class="n">flux</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gauflux</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">flux</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">detflux</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">polflux</span> <span class="o">!=</span><span class="mf">0.</span><span class="p">:</span>
+			<span class="k">print</span> <span class="s">&quot;Polarization detected for </span><span class="si">%s</span><span class="s"> with polarization fraction=</span><span class="si">%g</span><span class="s"> &quot;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">polflux</span><span class="o">/</span><span class="n">flux</span><span class="p">)</span>
+			<span class="k">pass</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">polflux</span><span class="o">=</span><span class="n">flux</span><span class="o">*</span><span class="n">pol_frac</span>
+			<span class="k">if</span> <span class="n">polflux</span> <span class="o">&gt;</span> <span class="n">fluxerr</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">polflux</span><span class="o">=</span><span class="n">polflux</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">polangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">high</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+		<span class="k">pass</span>
+
+
+</div>
+<div class="viewcode-block" id="PointSources.forecast_polarization"><a class="viewcode-back" href="../modules.html#PointSources.PointSources.forecast_polarization">[docs]</a>	<span class="k">def</span> <span class="nf">forecast_polarization</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pol_frac</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Assign polarized flux to the source from forecasts, could be either a</span>
+<span class="sd">		constant value to all the clouds or a value drawn from a distribution.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">fluxerr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">polerr</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolved</span><span class="p">:</span>
+			<span class="n">flux</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gauflux</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">flux</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">detflux</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">polflux</span> <span class="o">!=</span><span class="mf">0.</span><span class="p">:</span>
+			<span class="k">print</span> <span class="s">&quot;passing&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">polflux</span><span class="o">/</span><span class="n">flux</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span>
+			<span class="k">pass</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">polflux</span><span class="o">=</span><span class="n">flux</span><span class="o">*</span><span class="n">pol_frac</span>
+			<span class="k">if</span> <span class="n">polflux</span> <span class="o">&lt;</span> <span class="n">fluxerr</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">polflux</span><span class="o">=</span><span class="n">polflux</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">polangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">high</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">unpolarized</span><span class="o">=</span><span class="bp">True</span>
+
+
+
+		<span class="k">pass</span>
+
+</div>
+<div class="viewcode-block" id="PointSources.get_pol_frac"><a class="viewcode-back" href="../modules.html#PointSources.PointSources.get_pol_frac">[docs]</a>	<span class="k">def</span> <span class="nf">get_pol_frac</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolved</span><span class="p">:</span>
+			<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">polflux</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">gauflux</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">polflux</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">detflux</span>
+
+</div>
+<div class="viewcode-block" id="PointSources.get_polfrac_error"><a class="viewcode-back" href="../modules.html#PointSources.PointSources.get_polfrac_error">[docs]</a>	<span class="k">def</span> <span class="nf">get_polfrac_error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="n">P</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">polflux</span>
+		<span class="n">sigmaP</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">polerr</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolved</span><span class="p">:</span>
+			<span class="n">I</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gauflux</span>
+			<span class="n">sigmaI</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gauerr</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">I</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detflux</span>
+			<span class="n">sigmaI</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deterr</span>
+		<span class="k">return</span> <span class="n">sigmaf</span><span class="p">(</span><span class="n">P</span><span class="p">,</span><span class="n">I</span><span class="p">,</span><span class="n">sigmaP</span><span class="p">,</span> <span class="n">sigmaI</span><span class="p">)</span>
+
+
+</div>
+	<span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+			<span class="k">yield</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span>
+
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">idx</span> <span class="p">,</span><span class="n">catalog</span><span class="p">,</span><span class="n">ps_dict</span><span class="p">,</span> <span class="n">pol_sensitive</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Initialize the point source from the ID of  a catalogue read as an input.</span>
+
+<span class="sd">		**Parameters**</span>
+
+<span class="sd">		- idx:{int, or None }</span>
+<span class="sd">		 	ID in the catalogue</span>
+<span class="sd">		- catalogue: list of arrays</span>
+<span class="sd">		- ps_dict: dictionary</span>
+<span class="sd">			associate values  to each point source quantity</span>
+<span class="sd">		.. note::</span>
+<span class="sd">			if `idx` is `None` initialize the class  via the dictionary `ps_dict`  which  reades point sources property</span>
+<span class="sd">			saved in an `hdf5` file (see :func:`read_ps_selection_from_hdf5`).</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+
+		<span class="k">if</span> <span class="n">idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">id</span> 	<span class="o">=</span> <span class="n">catalog</span><span class="p">[</span><span class="n">ps_dict</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]][</span><span class="n">idx</span><span class="p">]</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">glon</span><span class="o">=</span><span class="n">catalog</span><span class="p">[</span><span class="n">ps_dict</span><span class="p">[</span><span class="s">&#39;glon&#39;</span><span class="p">]][</span><span class="n">idx</span><span class="p">]</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">glat</span><span class="o">=</span><span class="n">catalog</span><span class="p">[</span><span class="n">ps_dict</span><span class="p">[</span><span class="s">&#39;glat&#39;</span><span class="p">]][</span><span class="n">idx</span><span class="p">]</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">ra</span><span class="o">=</span><span class="n">catalog</span><span class="p">[</span><span class="n">ps_dict</span><span class="p">[</span><span class="s">&#39;ra&#39;</span><span class="p">]][</span><span class="n">idx</span><span class="p">]</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">dec</span><span class="o">=</span><span class="n">catalog</span><span class="p">[</span><span class="n">ps_dict</span><span class="p">[</span><span class="s">&#39;dec&#39;</span><span class="p">]][</span><span class="n">idx</span><span class="p">]</span>
+
+			<span class="bp">self</span><span class="o">.</span><span class="n">detflux</span><span class="o">=</span><span class="n">catalog</span><span class="p">[</span><span class="n">ps_dict</span><span class="p">[</span><span class="s">&#39;detflux&#39;</span><span class="p">]][</span><span class="n">idx</span><span class="p">]</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">deterr</span><span class="o">=</span><span class="n">catalog</span><span class="p">[</span><span class="n">ps_dict</span><span class="p">[</span><span class="s">&#39;deterr&#39;</span><span class="p">]][</span><span class="n">idx</span><span class="p">]</span>
+
+			<span class="bp">self</span><span class="o">.</span><span class="n">gauflux</span><span class="o">=</span><span class="n">catalog</span><span class="p">[</span><span class="n">ps_dict</span><span class="p">[</span><span class="s">&#39;gauflux&#39;</span><span class="p">]][</span><span class="n">idx</span><span class="p">]</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">gauerr</span><span class="o">=</span><span class="n">catalog</span><span class="p">[</span><span class="n">ps_dict</span><span class="p">[</span><span class="s">&#39;gauerr&#39;</span><span class="p">]][</span><span class="n">idx</span><span class="p">]</span>
+
+			<span class="bp">self</span><span class="o">.</span><span class="n">omega_eff</span><span class="o">=</span><span class="n">catalog</span><span class="p">[</span><span class="n">ps_dict</span><span class="p">[</span><span class="s">&#39;omega_eff&#39;</span><span class="p">]][</span><span class="n">idx</span><span class="p">]</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">resolved</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">catalog</span><span class="p">[</span><span class="n">ps_dict</span><span class="p">[</span><span class="s">&#39;resolved&#39;</span><span class="p">]][</span><span class="n">idx</span><span class="p">])</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">ext_val</span><span class="o">=</span><span class="n">catalog</span><span class="p">[</span><span class="n">ps_dict</span><span class="p">[</span><span class="s">&#39;ext_val&#39;</span><span class="p">]][</span><span class="n">idx</span><span class="p">]</span>
+			<span class="k">if</span> <span class="n">pol_sensitive</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">polflux</span><span class="o">=</span><span class="n">catalog</span><span class="p">[</span><span class="n">ps_dict</span><span class="p">[</span><span class="s">&#39;polflux&#39;</span><span class="p">]][</span><span class="n">idx</span><span class="p">]</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">polerr</span><span class="o">=</span><span class="n">catalog</span><span class="p">[</span><span class="n">ps_dict</span><span class="p">[</span><span class="s">&#39;polerr&#39;</span><span class="p">]][</span><span class="n">idx</span><span class="p">]</span>
+
+				<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">polflux</span> <span class="o">!=</span><span class="mi">0</span>  <span class="p">:</span>
+					<span class="bp">self</span><span class="o">.</span><span class="n">polangle</span><span class="o">=</span><span class="n">catalog</span><span class="p">[</span><span class="n">ps_dict</span><span class="p">[</span><span class="s">&#39;polangle&#39;</span><span class="p">]][</span><span class="n">idx</span><span class="p">]</span>
+					<span class="bp">self</span><span class="o">.</span><span class="n">polang_err</span><span class="o">=</span><span class="n">catalog</span><span class="p">[</span><span class="n">ps_dict</span><span class="p">[</span><span class="s">&#39;polang_err&#39;</span><span class="p">]][</span><span class="n">idx</span><span class="p">]</span>
+
+				<span class="k">else</span> <span class="p">:</span>
+					<span class="bp">self</span><span class="o">.</span><span class="n">polangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+					<span class="bp">self</span><span class="o">.</span><span class="n">polang_err</span><span class="o">=</span><span class="n">catalog</span><span class="p">[</span><span class="n">ps_dict</span><span class="p">[</span><span class="s">&#39;polang_err&#39;</span><span class="p">]][</span><span class="n">idx</span><span class="p">]</span>
+
+		<span class="k">else</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="o">=</span><span class="p">{</span><span class="n">i</span><span class="p">:</span><span class="n">k</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">k</span> <span class="ow">in</span> <span class="n">ps_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+			<span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">glon</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">glat</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ra</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">dec</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">omega_eff</span> <span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="s">&#39;glon&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="s">&#39;glat&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="s">&#39;ra&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="s">&#39;dec&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="s">&#39;omega_eff&#39;</span><span class="p">]</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">detflux</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gauflux</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">deterr</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">gauerr</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="s">&#39;detflux&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="s">&#39;gauflux&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="s">&#39;deterr&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="s">&#39;gauerr&#39;</span><span class="p">]</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">polflux</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">polerr</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">polangle</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">polang_err</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="s">&#39;polflux&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="s">&#39;polerr&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="s">&#39;polangle&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="s">&#39;polang_err&#39;</span><span class="p">]</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">resolved</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="s">&#39;resolved&#39;</span><span class="p">]</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">ext_val</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dict</span><span class="p">[</span><span class="s">&#39;ext_val&#39;</span><span class="p">]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">unpolarized</span><span class="o">=</span><span class="bp">False</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">PS4C 0.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2017, Giuseppe Puglisi.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,596 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pointsource_utilities &mdash; PS4C 0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="PS4C 0.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">PS4C 0.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pointsource_utilities</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#   pointsource_utilities.PY</span>
+<span class="c">#   Utilties functions for data analysis of point sources.</span>
+<span class="c">#</span>
+<span class="c">#   date: 2017-12-21</span>
+<span class="c">#   author: GIUSEPPE PUGLISI</span>
+<span class="c">#</span>
+<span class="c">#   Copyright (C) 2017   Giuseppe Puglisi    giuspugl@sissa.it</span>
+<span class="c">#</span>
+
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.optimize</span> <span class="kn">as</span> <span class="nn">so</span>
+<span class="kn">import</span> <span class="nn">astropy</span>
+<span class="kn">from</span> <span class="nn">astropy</span> <span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span><span class="p">,</span> <span class="n">constants</span> <span class="k">as</span> <span class="n">C</span>
+<span class="kn">import</span> <span class="nn">scipy</span> <span class="kn">as</span> <span class="nn">sp</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">integrate</span><span class="p">,</span> <span class="n">interpolate</span>
+<span class="kn">from</span> <span class="nn">IO</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">Stats</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">healpy</span> <span class="kn">import</span> <span class="n">read_map</span><span class="p">,</span> <span class="n">query_strip</span><span class="p">,</span> <span class="n">query_disc</span><span class="p">,</span> <span class="n">get_nside</span><span class="p">,</span> <span class="n">mollview</span>
+
+<div class="viewcode-block" id="compute_variance_ratios"><a class="viewcode-back" href="../modules.html#pointsource_utilities.compute_variance_ratios">[docs]</a><span class="k">def</span> <span class="nf">compute_variance_ratios</span><span class="p">(</span><span class="n">fsky</span><span class="p">,</span> <span class="n">dir_ps</span> <span class="o">=</span><span class="s">&#39;./data/&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given a fraction of sky  :math:`f_{sky}` if computes the ratio of the variance of the synchrotron and dust maps</span>
+<span class="sd">    within a patch with size ``fsky`` and the one within  ``fsky0`` which is the value from  Planck collaboration et al. 2015.X .</span>
+<span class="sd">    All the considered patches exclude the Galactic plane.</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    - `fsky`: {float}</span>
+<span class="sd">    - `dir_ps`:{string}</span>
+<span class="sd">        path to the PS4C data folder</span>
+
+<span class="sd">    **Returns**</span>
+
+<span class="sd">    -`fs`: {float}</span>
+<span class="sd">        ratio of synchrotron variances</span>
+<span class="sd">    -`fd`: {float}</span>
+<span class="sd">        ratio of thermal dust variances</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sizeradpatch</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">fsky</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+    <span class="n">fskyval</span><span class="o">=</span>    <span class="n">fsky</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span><span class="p">(</span><span class="mf">4.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+    <span class="n">synchro</span><span class="o">=</span><span class="n">hp</span><span class="o">.</span><span class="n">read_map</span><span class="p">(</span><span class="n">dir_ps</span><span class="o">+</span><span class="s">&#39;synchro_30GHz_256.fits&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span><span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">Ps</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">synchro</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span><span class="mi">2</span> <span class="o">+</span><span class="n">synchro</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">dust</span><span class="o">=</span><span class="n">hp</span><span class="o">.</span><span class="n">read_map</span><span class="p">(</span><span class="n">dir_ps</span><span class="o">+</span><span class="s">&#39;thermaldust_353GHz_256.fits&#39;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span><span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">Pd</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dust</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span><span class="mi">2</span> <span class="o">+</span><span class="n">dust</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">nside</span><span class="o">=</span><span class="n">get_nside</span><span class="p">(</span><span class="n">synchro</span><span class="p">)</span>
+    <span class="n">listpix0</span><span class="o">=</span><span class="n">hp</span><span class="o">.</span><span class="n">query_strip</span><span class="p">(</span><span class="n">nside</span><span class="p">,</span> <span class="p">(</span><span class="mf">105.</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">rad</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="mf">75.</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">rad</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>  <span class="p">)</span>
+    <span class="n">galstrip</span><span class="o">=</span><span class="n">hp</span><span class="o">.</span><span class="n">query_strip</span><span class="p">(</span><span class="n">nside</span><span class="p">,</span> <span class="p">(</span><span class="mf">75.</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">rad</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="mf">105.</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">rad</span><span class="p">)</span><span class="o">.</span><span class="n">value</span> <span class="p">)</span>
+
+    <span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="mf">180.</span><span class="o">-</span><span class="mf">30.</span><span class="p">)</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">deg</span>
+    <span class="n">fsky2patch</span><span class="o">=</span><span class="p">{</span><span class="n">fskyval</span><span class="o">&lt;</span><span class="mf">0.02</span><span class="p">:</span> <span class="s">&#39;small&#39;</span><span class="p">,</span> <span class="mf">0.02</span><span class="o">&lt;=</span><span class="n">fskyval</span><span class="o">&lt;</span><span class="mf">0.1</span><span class="p">:</span><span class="s">&#39;large&#39;</span><span class="p">,</span> <span class="mf">0.1</span><span class="o">&lt;=</span><span class="n">fskyval</span><span class="o">&lt;=</span><span class="mf">0.5</span><span class="p">:</span><span class="s">&#39;verylarge&#39;</span><span class="p">,</span><span class="mf">0.5</span><span class="o">&lt;</span><span class="n">fskyval</span><span class="o">&lt;=</span><span class="mi">1</span><span class="p">:</span><span class="s">&#39;full&#39;</span><span class="p">}</span>
+    <span class="n">listp_dict</span><span class="o">=</span> <span class="p">{</span><span class="s">&#39;small&#39;</span><span class="p">:</span> <span class="n">query_disc</span><span class="p">(</span><span class="n">nside</span><span class="p">,</span> <span class="n">hp</span><span class="o">.</span><span class="n">ang2vec</span><span class="p">(</span><span class="n">center</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">rad</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">,(</span><span class="mi">35</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">rad</span><span class="p">)),</span><span class="n">sizeradpatch</span><span class="p">),</span>
+              <span class="s">&#39;large&#39;</span><span class="p">:</span> <span class="n">query_disc</span><span class="p">(</span><span class="n">nside</span><span class="p">,</span> <span class="n">hp</span><span class="o">.</span><span class="n">ang2vec</span><span class="p">(</span><span class="n">center</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">rad</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">,(</span><span class="mi">35</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">rad</span><span class="p">)),</span><span class="n">sizeradpatch</span><span class="p">),</span>
+              <span class="s">&#39;verylarge&#39;</span><span class="p">:</span> <span class="n">query_disc</span><span class="p">(</span><span class="n">nside</span><span class="p">,</span> <span class="n">hp</span><span class="o">.</span><span class="n">ang2vec</span><span class="p">(</span><span class="n">center</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">rad</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">,(</span><span class="mi">35</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">deg</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">rad</span><span class="p">)),</span><span class="n">sizeradpatch</span><span class="p">),</span>
+              <span class="s">&#39;full&#39;</span><span class="p">:</span> <span class="n">listpix0</span>      <span class="p">}</span>
+    <span class="n">patch</span><span class="o">=</span><span class="n">fsky2patch</span><span class="p">[</span><span class="bp">True</span><span class="p">]</span>
+    <span class="n">listpix</span><span class="o">=</span><span class="n">listp_dict</span><span class="p">[</span><span class="n">patch</span> <span class="p">]</span>
+    <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">hp</span><span class="o">.</span><span class="n">nside2npix</span><span class="p">(</span><span class="n">nside</span><span class="p">))</span>
+    <span class="n">mask</span><span class="p">[</span><span class="n">listpix</span><span class="p">]</span><span class="o">=</span><span class="mf">1.</span>
+    <span class="n">mask</span><span class="p">[</span><span class="n">galstrip</span><span class="p">]</span><span class="o">=</span><span class="mf">0.</span>
+
+    <span class="n">select_pix</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mask</span>
+
+    <span class="n">fs</span><span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">Ps</span><span class="p">[</span><span class="n">select_pix</span><span class="p">])</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">var</span> <span class="p">(</span><span class="n">Ps</span><span class="p">[</span><span class="n">listpix0</span><span class="p">]))</span>
+    <span class="n">fd</span><span class="o">=</span> <span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">Pd</span><span class="p">[</span><span class="n">select_pix</span><span class="p">])</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">Pd</span><span class="p">[</span><span class="n">listpix0</span><span class="p">]))</span>
+
+    <span class="k">return</span> <span class="n">fs</span><span class="p">,</span><span class="n">fd</span>
+
+
+</div>
+<div class="viewcode-block" id="forecast_Galaxy"><a class="viewcode-back" href="../modules.html#pointsource_utilities.forecast_Galaxy">[docs]</a><span class="k">def</span> <span class="nf">forecast_Galaxy</span><span class="p">(</span><span class="n">ell</span><span class="p">,</span><span class="n">nu</span> <span class="p">,</span><span class="n">fsky</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span> <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the Galactic contribution in multipole ``ell`` , frequency ``nu`` and</span>
+<span class="sd">    fraction of sky ``fsky``   given eq.(22) of  Planck 2015 X data are taken from  table 4, table 5, table 11.</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    -   `ell` : {float or array}</span>
+<span class="sd">        multipole orders</span>
+<span class="sd">    -   `nu` :{float}</span>
+<span class="sd">    -   `fsky`:{float}</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">Asynch</span><span class="o">=</span><span class="mi">20</span> <span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">K</span>  <span class="c">#data in RJ</span>
+    <span class="n">nuscale</span><span class="o">=</span><span class="mf">0.408</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">GHz</span>
+    <span class="n">nuscale2</span><span class="o">=</span><span class="mi">30</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">GHz</span>
+
+    <span class="n">beta_s</span><span class="o">=</span><span class="mf">3.12</span>
+    <span class="n">s_sync</span><span class="o">=</span><span class="k">lambda</span> <span class="n">nu</span> <span class="p">:</span> <span class="n">Asynch</span> <span class="o">*</span><span class="p">(</span><span class="n">nu</span><span class="o">/</span><span class="n">nuscale</span> <span class="p">)</span> <span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="p">(</span> <span class="n">beta_s</span> <span class="o">+</span><span class="mi">2</span><span class="p">)</span> <span class="p">)</span>
+    <span class="n">qs</span><span class="o">=</span><span class="mf">1.3</span> <span class="o">*</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">uK</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">alpha_s</span><span class="o">=-</span><span class="mf">0.31</span>
+    <span class="n">qd</span><span class="o">=</span><span class="mi">208</span> <span class="o">*</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">uK</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">alpha_d</span><span class="o">=-</span><span class="mf">0.59</span>
+    <span class="n">gamma</span><span class="o">=</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">h</span><span class="o">.</span><span class="n">cgs</span><span class="o">/</span><span class="n">C</span><span class="o">.</span><span class="n">k_B</span><span class="o">.</span><span class="n">cgs</span> <span class="o">/</span><span class="p">(</span><span class="mi">20</span> <span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">u</span><span class="o">.</span><span class="n">GHz</span><span class="p">)</span>
+    <span class="n">nudust</span><span class="o">=</span><span class="mi">353</span> <span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">GHz</span>
+    <span class="n">beta_d</span><span class="o">=</span><span class="mf">1.55</span>
+    <span class="n">Adust</span><span class="o">=</span> <span class="mi">15</span>
+
+    <span class="n">fsky0</span><span class="o">=</span><span class="mf">0.73</span> <span class="o">*</span><span class="mf">4.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">sr</span>
+    <span class="n">s_dust</span><span class="o">=</span><span class="k">lambda</span> <span class="n">nu</span><span class="p">:</span> <span class="n">Adust</span>  <span class="o">*</span><span class="p">(</span><span class="n">nu</span> <span class="o">/</span><span class="n">nudust</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="n">beta_d</span> <span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">gamma</span> <span class="o">*</span><span class="n">nudust</span> <span class="p">)</span> <span class="o">-</span><span class="mi">1</span> <span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">gamma</span> <span class="o">*</span><span class="n">nu</span> <span class="p">)</span> <span class="o">-</span><span class="mi">1</span> <span class="p">)</span>
+    <span class="n">a</span><span class="o">=</span><span class="mi">1</span>
+    <span class="n">b</span><span class="o">=</span><span class="mi">200</span>
+    <span class="n">c</span><span class="o">=</span><span class="mi">140</span>
+    <span class="n">r</span><span class="o">=.</span><span class="mi">10</span>
+    <span class="n">correctionfunction</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">a</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">c</span><span class="o">*</span><span class="n">r</span><span class="p">)</span> <span class="o">+</span><span class="n">b</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">r</span><span class="o">*</span><span class="n">x</span><span class="p">))</span> <span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">c</span><span class="o">*</span><span class="n">r</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">r</span><span class="o">*</span><span class="n">x</span><span class="p">))</span>
+    <span class="n">factor</span><span class="o">=</span><span class="n">correctionfunction</span><span class="p">(</span><span class="n">nu</span><span class="o">.</span><span class="n">value</span><span class="p">)</span><span class="o">/</span><span class="n">correctionfunction</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <span class="n">fs</span><span class="p">,</span> <span class="n">fd</span><span class="o">=</span> <span class="n">compute_variance_ratios</span><span class="p">(</span><span class="n">fsky</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span> <span class="n">qs</span><span class="o">*</span><span class="p">(</span><span class="n">ell</span><span class="o">/</span><span class="mf">80.</span><span class="p">)</span><span class="o">**</span><span class="n">alpha_s</span> <span class="o">*</span> <span class="n">s_sync</span><span class="p">(</span><span class="n">nu</span><span class="p">)</span><span class="o">/</span><span class="n">s_sync</span><span class="p">(</span><span class="n">nuscale2</span><span class="p">)</span> <span class="o">*</span><span class="n">fs</span>
+            <span class="o">+</span> <span class="n">fd</span><span class="o">*</span><span class="n">qd</span> <span class="o">*</span><span class="p">(</span><span class="n">ell</span><span class="o">/</span><span class="mf">80.</span><span class="p">)</span><span class="o">**</span><span class="n">alpha_d</span> <span class="o">*</span> <span class="n">s_dust</span><span class="p">(</span><span class="n">nu</span><span class="p">)</span><span class="o">/</span><span class="n">s_dust</span><span class="p">(</span><span class="n">nudust</span><span class="p">))</span><span class="o">*</span><span class="p">(</span><span class="n">fsky</span><span class="o">/</span><span class="n">fsky0</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="fit_numbercounts_w_powerlaw"><a class="viewcode-back" href="../modules.html#pointsource_utilities.fit_numbercounts_w_powerlaw">[docs]</a><span class="k">def</span> <span class="nf">fit_numbercounts_w_powerlaw</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">n</span> <span class="p">,</span> <span class="n">Smax</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fit the differential number counts as a single power law :math:`dN/dS \propto K S^{-\gamma}` up to a maximum flux density.</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">	- `S`: {array}</span>
+<span class="sd">		array of fluxes</span>
+<span class="sd">	- `n`: {function}</span>
+<span class="sd">		differential number counts computed from interpolating number counts from model</span>
+<span class="sd">	- `Smax`: {float}</span>
+<span class="sd">		the flux limit you may want to estimate the power law fit</span>
+
+<span class="sd">    **Returns**</span>
+
+<span class="sd">    - `K`:{float}</span>
+<span class="sd">    - `Gamma`: {float}</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+	<span class="n">Smin</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">S</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span>
+	<span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;verbose&#39;</span>  <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">False</span>
+
+	<span class="n">f</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span><span class="n">A</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span><span class="n">A</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="n">gamma</span><span class="p">)</span>
+	<span class="n">idval</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">Smax</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="n">S</span><span class="o">.</span><span class="n">value</span>  <span class="p">)</span> <span class="p">)</span>
+
+	<span class="n">popt</span><span class="p">,</span><span class="n">cov</span><span class="o">=</span> <span class="n">so</span><span class="o">.</span><span class="n">curve_fit</span><span class="p">(</span><span class="n">f</span> <span class="p">,</span> <span class="n">S</span><span class="p">[:</span><span class="n">idval</span><span class="p">],</span> <span class="n">n</span><span class="p">(</span><span class="n">S</span><span class="p">[:</span><span class="n">idval</span><span class="p">]),</span><span class="n">p0</span><span class="o">=</span><span class="p">[</span><span class="mi">20</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+	<span class="n">K</span><span class="p">,</span> <span class="n">Gamma</span><span class="o">=</span><span class="n">popt</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">popt</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+	<span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">]:</span> <span class="k">print</span> <span class="s">&quot;Fitting up to S&lt; </span><span class="si">%g</span><span class="s"> Jy, Gamma= </span><span class="si">%g</span><span class="s">, K=</span><span class="si">%g</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">S</span><span class="p">[</span><span class="n">idval</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">Gamma</span><span class="p">,</span> <span class="n">K</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">K</span><span class="p">,</span> <span class="n">Gamma</span>
+</div>
+<div class="viewcode-block" id="compute_confusion_limit"><a class="viewcode-back" href="../modules.html#pointsource_utilities.compute_confusion_limit">[docs]</a><span class="k">def</span>  <span class="nf">compute_confusion_limit</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">Gamma</span><span class="p">,</span> <span class="n">omega_b</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Compute the confusion limit :math:`S_c=5\sigma_c`   by means of the definition in Condon,  1974.</span>
+
+<span class="sd">	.. math::</span>
+
+<span class="sd">		\sigma_c = ( {q ^{3- \gamma}} k \Omega_e/({3- \gamma}) )^{1/ (\gamma-1)}</span>
+
+<span class="sd">	where we set :math:`q=5` for the :math:`5\sigma` *truncation limit*.</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    - `K`, `Gamma` as computed from :func:`fit_numbercounts_w_powerlaw`.</span>
+
+
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">K</span><span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">((</span><span class="n">u</span><span class="o">.</span><span class="n">Jy</span> <span class="p">),</span> <span class="p">(</span><span class="n">Gamma</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">/</span><span class="n">u</span><span class="o">.</span><span class="n">sr</span>
+
+	<span class="n">Omega_e</span><span class="o">=</span> <span class="n">omega_b</span> <span class="o">/</span><span class="p">(</span><span class="n">Gamma</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+	<span class="n">sigmac</span><span class="o">=</span> <span class="p">(</span><span class="n">q</span><span class="o">**</span><span class="p">(</span><span class="mi">3</span><span class="o">-</span><span class="n">Gamma</span><span class="p">)</span><span class="o">*</span><span class="n">K</span><span class="o">*</span><span class="n">Omega_e</span><span class="o">/</span><span class="p">(</span><span class="mi">3</span><span class="o">-</span><span class="n">Gamma</span><span class="p">))</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">Gamma</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+	<span class="k">return</span> <span class="n">sigmac</span>
+
+</div>
+<div class="viewcode-block" id="beamsolidangle"><a class="viewcode-back" href="../modules.html#pointsource_utilities.beamsolidangle">[docs]</a><span class="k">def</span> <span class="nf">beamsolidangle</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given a FWHM resolution `theta` in radians, it computes the solid angle  in steradians</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span> <span class="n">theta</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mf">4.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">steradian</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Krj2Kcmb"><a class="viewcode-back" href="../modules.html#pointsource_utilities.Krj2Kcmb">[docs]</a><span class="k">def</span> <span class="nf">Krj2Kcmb</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">Trj</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert antenna temperature ( Rayleigh-Jeans) into the physical one</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nu0</span> <span class="o">=</span><span class="mf">56.8</span> <span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">GHz</span>
+    <span class="n">x</span><span class="o">=</span><span class="n">nu</span><span class="o">/</span><span class="n">nu0</span>
+    <span class="k">return</span> <span class="n">Trj</span> <span class="o">/</span> <span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Kcmb2Krj"><a class="viewcode-back" href="../modules.html#pointsource_utilities.Kcmb2Krj">[docs]</a><span class="k">def</span> <span class="nf">Kcmb2Krj</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">Tcmb</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert physical temperature  into the antenna one.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">nu0</span> <span class="o">=</span><span class="mf">56.8</span> <span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">GHz</span>
+	<span class="n">x</span><span class="o">=</span><span class="n">nu</span><span class="o">/</span><span class="n">nu0</span>
+	<span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">)</span><span class="o">*</span><span class="n">Tcmb</span>
+</div>
+<div class="viewcode-block" id="Krj2brightness"><a class="viewcode-back" href="../modules.html#pointsource_utilities.Krj2brightness">[docs]</a><span class="k">def</span> <span class="nf">Krj2brightness</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">theta_beam</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert brightness temperature to brightness measured in [Jy /beam]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c"># uK_RJ----------&gt; mJy /beam</span>
+    <span class="c"># Astropy here is misleading, it requires Jy quantity but physically should be Jy/sr</span>
+    <span class="c">#sigmaT [uK arcmin]</span>
+    <span class="n">Omega_beam</span> <span class="o">=</span> <span class="n">beamsolidangle</span><span class="p">(</span><span class="n">theta_beam</span><span class="p">)</span>
+    <span class="n">equiv</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">brightness_temperature</span><span class="p">(</span><span class="n">Omega_beam</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">temp</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">milliJansky</span> <span class="p">,</span> <span class="n">equivalencies</span><span class="o">=</span><span class="n">equiv</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="brightness2Krj"><a class="viewcode-back" href="../modules.html#pointsource_utilities.brightness2Krj">[docs]</a><span class="k">def</span> <span class="nf">brightness2Krj</span><span class="p">(</span><span class="n">sigmaS</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">theta_beam</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert brightness to brightness temperature</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># mJy /beam  --------&gt; K_RJ</span>
+    <span class="c"># Astropy here is misleading, it requires Jy quantity but physically should be Jy/sr</span>
+    <span class="c">#sigmaS [mJy beam-1]</span>
+    <span class="n">Omega_beam</span> <span class="o">=</span> <span class="n">beamsolidangle</span><span class="p">(</span><span class="n">theta_beam</span><span class="p">)</span>
+    <span class="n">equiv</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">brightness_temperature</span><span class="p">(</span><span class="n">Omega_beam</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sigmaS</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Kelvin</span><span class="p">,</span> <span class="n">equivalencies</span><span class="o">=</span><span class="n">equiv</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="brightness2Kcmb"><a class="viewcode-back" href="../modules.html#pointsource_utilities.brightness2Kcmb">[docs]</a><span class="k">def</span> <span class="nf">brightness2Kcmb</span> <span class="p">(</span><span class="n">nu</span><span class="p">,</span><span class="n">Ib</span> <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns conversion factor to pass from ``Ib``  brightness units  to physical temperature at a given frequency ``nu``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nu0</span><span class="o">=</span><span class="mf">56.8</span> <span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">gigahertz</span>
+    <span class="n">x</span><span class="o">=</span> <span class="n">nu</span><span class="o">/</span><span class="n">nu0</span>
+    <span class="k">return</span> <span class="n">Ib</span><span class="o">*</span> <span class="mf">4.e-2</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span> <span class="n">x</span><span class="o">**</span><span class="mi">4</span> <span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">uK</span> <span class="o">/</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">Jy</span><span class="o">/</span> <span class="n">u</span><span class="o">.</span><span class="n">sr</span> <span class="p">)</span></div>
+<div class="viewcode-block" id="estimate_power_spectrum_contribution"><a class="viewcode-back" href="../modules.html#pointsource_utilities.estimate_power_spectrum_contribution">[docs]</a><span class="k">def</span> <span class="nf">estimate_power_spectrum_contribution</span><span class="p">(</span><span class="n">dNdS</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span><span class="n">omega_b</span><span class="p">,</span> <span class="n">Smin</span><span class="p">,</span> <span class="n">Smax</span> <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given differential  number counts :math:`dN/dS`, estimated at certain  flux densities :math:`S\in [S_{min}, S_{max}]`,</span>
+<span class="sd">    it estimates the integral</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        C= \int _{S_{min}} ^{ S_{max}} dS {n(S)} S^2</span>
+
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    - `dNdS`: {func}</span>
+<span class="sd">        differential number counts interpolated by means of :func:`numpy.interpolate.interp1d`</span>
+<span class="sd">    - ` nu`:{float}</span>
+<span class="sd">        frequency</span>
+<span class="sd">    - `omega_b`:{float}</span>
+<span class="sd">        solid angle of the beam</span>
+<span class="sd">    - `Smin` and `Smax`:{float}</span>
+<span class="sd">        range of integration</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># function to integrate</span>
+    <span class="n">integrand</span><span class="o">=</span> <span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">dNdS</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">*</span> <span class="n">s</span><span class="o">**</span><span class="mi">2</span>
+    <span class="c">#integral</span>
+    <span class="n">Integral</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">integrate</span><span class="o">.</span><span class="n">quad</span><span class="p">(</span> <span class="n">integrand</span><span class="p">,</span> <span class="n">Smin</span><span class="p">,</span><span class="n">Smax</span><span class="p">,</span><span class="n">limit</span><span class="o">=</span><span class="mi">1000</span> <span class="p">,</span><span class="n">epsrel</span><span class="o">=</span><span class="mf">1.e-3</span><span class="p">)</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">Jy</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">u</span><span class="o">.</span><span class="n">sr</span>
+
+    <span class="n">flux2Kcmb</span><span class="o">=</span> <span class="n">brightness2Kcmb</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+    <span class="c">#flux2Kcmb = brightness2Krj(1*u.Jy, nu,fwhm).to(u.uK)</span>
+    <span class="k">return</span> <span class="n">flux2Kcmb</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span><span class="n">Integral</span>
+
+</div>
+<div class="viewcode-block" id="linfunc"><a class="viewcode-back" href="../modules.html#pointsource_utilities.linfunc">[docs]</a><span class="k">def</span> <span class="nf">linfunc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">q</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">m</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span><span class="n">q</span>
+</div>
+<div class="viewcode-block" id="sigmaf"><a class="viewcode-back" href="../modules.html#pointsource_utilities.sigmaf">[docs]</a><span class="k">def</span> <span class="nf">sigmaf</span><span class="p">(</span><span class="n">P</span><span class="p">,</span><span class="n">I</span><span class="p">,</span> <span class="n">sigmaP</span><span class="p">,</span> <span class="n">sigmaI</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given polarized and intensity flux , P and I and their uncertainties sigmaP and sigmaI, propagates</span>
+<span class="sd">    the uncertainties to polarization fraction :math:`\Pi= P/I`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sigmaP</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">I</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">P</span><span class="o">/</span><span class="n">I</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sigmaI</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="get_spectral_index"><a class="viewcode-back" href="../modules.html#pointsource_utilities.get_spectral_index">[docs]</a><span class="k">def</span> <span class="nf">get_spectral_index</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span><span class="n">v2</span><span class="p">,</span> <span class="n">S1</span><span class="p">,</span><span class="n">S2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the spectral index :math:`alpha_{v1} ^{v2}`  of fluxes S1, S2 estimated at two different frequencies, v1 and v2.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">S1</span><span class="o">/</span><span class="n">S2</span><span class="p">)</span><span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">v1</span><span class="o">/</span><span class="n">v2</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="compute_polfrac_scaling"><a class="viewcode-back" href="../modules.html#pointsource_utilities.compute_polfrac_scaling">[docs]</a><span class="k">def</span> <span class="nf">compute_polfrac_scaling</span><span class="p">(</span> <span class="n">dir_ps</span><span class="p">,</span><span class="n">exclude_HFI_data</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">include_steep</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span> <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">     Considering observations from several catalogues, it computes the observed  polarization fractions</span>
+<span class="sd">    and fit a lognormal distribution in order to get from the best fit parameters the average</span>
+<span class="sd">    values of :math:`&lt; \Pi&gt; ,&lt; \Pi^2&gt;, \Pi_{med}` and their errors. Once all the datasets have been fitted</span>
+<span class="sd">    it  computes the scaling of :math:`&lt; \Pi^2&gt;^{1/2}` by means of a linear function.</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    - `dir_ps`: {string}</span>
+<span class="sd">        path to the PS4C data folder</span>
+<span class="sd">    - `exclude_HFI_data`:{bool}</span>
+<span class="sd">        if set to `True` it exclude the data from HFI channels of Planck.</span>
+<span class="sd">    - `include_steep`:{bool}</span>
+<span class="sd">        if set to   `True` it includes in the computation even Steep Spectrum Radio Sources.</span>
+<span class="sd">         We recommend you to use this option **if** you are running at low radio frequencies, i.e. :math:`&lt;20` GHz.</span>
+
+<span class="sd">    **Returns**</span>
+
+<span class="sd">    - `A, sigmaA`:{float}</span>
+<span class="sd">        the slope and the error on the slope as computed from the linear fit</span>
+<span class="sd">    -  `B, sigmaB`:{float}</span>
+<span class="sd">        the constant term fitted from the linear function</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fname</span><span class="o">=</span><span class="n">dir_ps</span><span class="o">+</span><span class="s">&#39;spass_nvss_catalog.tsv&#39;</span>
+    <span class="n">cat</span><span class="p">,</span><span class="n">dict_cat</span><span class="o">=</span><span class="n">read_spass_nvss_catalog</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">nfreq</span><span class="o">=</span><span class="mi">18</span>
+    <span class="k">if</span> <span class="n">include_steep</span> <span class="p">:</span>
+        <span class="n">flat</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_less</span> <span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;alpha&#39;</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">nfreq</span><span class="o">-=</span><span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">flat</span><span class="o">=</span>	<span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_greater</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;alpha&#39;</span><span class="p">],</span> <span class="o">-</span><span class="mf">0.5</span> <span class="p">)</span>
+
+    <span class="n">upmaj</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;f_majaxis&#39;</span><span class="p">],</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">upmin</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;f_minaxis&#39;</span><span class="p">],</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">unres</span> <span class="o">=</span>  <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">upmaj</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span> <span class="n">upmin</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+    <span class="n">flat_unres</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">flat</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span> <span class="n">unres</span> <span class="p">)</span>
+    <span class="n">notneg</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_greater</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;PSP&#39;</span><span class="p">],</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">flat_unres</span><span class="p">,</span> <span class="n">notneg</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">exclude_HFI_data</span><span class="p">:</span>
+        <span class="n">nfreq</span><span class="o">-=</span><span class="mi">3</span>
+        <span class="n">bins</span><span class="o">=</span><span class="p">{</span><span class="mi">30</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span><span class="mi">44</span><span class="p">:</span><span class="mi">10</span><span class="p">,</span><span class="mi">70</span><span class="p">:</span><span class="mi">15</span><span class="p">}</span>
+        <span class="n">bonaveravals</span><span class="o">=</span><span class="p">[</span><span class="mf">4.03</span><span class="p">,</span> <span class="mf">4.64</span><span class="p">,</span><span class="mf">4.48</span><span class="p">]</span>
+        <span class="n">bonaveraerrs</span><span class="o">=</span><span class="p">[</span><span class="mf">0.65</span><span class="p">,</span> <span class="mf">1.58</span><span class="p">,</span><span class="mf">0.49</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">bins</span><span class="o">=</span><span class="p">{</span><span class="mi">30</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span><span class="mi">44</span><span class="p">:</span><span class="mi">10</span><span class="p">,</span><span class="mi">70</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span> <span class="mi">100</span><span class="p">:</span><span class="mi">7</span><span class="p">,</span><span class="mi">143</span><span class="p">:</span><span class="mi">6</span><span class="p">,</span><span class="mi">217</span><span class="p">:</span><span class="mi">15</span><span class="p">}</span>
+        <span class="n">bonaveravals</span><span class="o">=</span><span class="p">[</span><span class="mf">4.03</span><span class="p">,</span> <span class="mf">4.64</span><span class="p">,</span><span class="mf">4.48</span><span class="p">,</span><span class="mf">5.75</span><span class="p">,</span><span class="mf">4.91</span><span class="p">,</span><span class="mf">4.54</span><span class="p">]</span>
+        <span class="n">bonaveraerrs</span><span class="o">=</span><span class="p">[</span><span class="mf">0.65</span><span class="p">,</span> <span class="mf">1.58</span><span class="p">,</span><span class="mf">0.49</span><span class="p">,</span><span class="mf">0.47</span><span class="p">,</span><span class="mf">0.51</span><span class="p">,</span><span class="mf">0.41</span><span class="p">]</span>
+
+
+    <span class="n">pimedian</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nfreq</span><span class="p">)</span>
+    <span class="n">pisquare</span><span class="o">=</span><span class="n">pimedian</span><span class="o">*</span><span class="mf">0.</span>
+    <span class="n">deltapisq</span><span class="o">=</span><span class="n">pimedian</span><span class="o">*</span><span class="mf">0.</span>
+    <span class="n">deltapim</span> <span class="o">=</span><span class="n">pimedian</span><span class="o">*</span><span class="mf">0.</span>
+    <span class="n">freqs</span><span class="o">=</span><span class="n">pimedian</span><span class="o">*</span><span class="mf">0.</span>
+    <span class="n">deltapi</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">pisquare</span><span class="p">)</span>
+    <span class="n">pimean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">pisquare</span><span class="p">)</span>
+
+    <span class="n">idx</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">freqs</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">=</span><span class="mf">1.4</span>
+    <span class="n">pimedian</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="n">pisquare</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="n">deltapisq</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="n">deltapim</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">pimean</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">deltapi</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">=</span><span class="n">fitting_lognormal_from_fluxes</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;INV&#39;</span><span class="p">][</span><span class="n">mask</span><span class="p">],</span> <span class="n">cat</span><span class="p">[</span><span class="s">&#39;PNV&#39;</span><span class="p">][</span><span class="n">mask</span><span class="p">],</span>
+                                                                       <span class="n">cat</span><span class="p">[</span><span class="s">&#39;e_INV&#39;</span><span class="p">][</span><span class="n">mask</span><span class="p">],</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;e_PNV&#39;</span><span class="p">][</span><span class="n">mask</span><span class="p">],</span>
+                                                                   		<span class="s">&#39;NVSS&#39;</span><span class="p">,</span><span class="n">workdir</span><span class="o">=</span><span class="n">dir_ps</span><span class="p">,</span><span class="n">fig</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">idx</span><span class="o">+=</span><span class="mi">1</span>
+    <span class="n">freqs</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">=</span><span class="mf">2.3</span>
+    <span class="n">pimedian</span><span class="p">[</span><span class="n">idx</span> <span class="p">],</span><span class="n">pisquare</span><span class="p">[</span><span class="n">idx</span> <span class="p">],</span><span class="n">deltapisq</span><span class="p">[</span><span class="n">idx</span> <span class="p">],</span><span class="n">deltapim</span><span class="p">[</span><span class="n">idx</span> <span class="p">],</span> <span class="n">pimean</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">deltapi</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">=</span><span class="n">fitting_lognormal_from_fluxes</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;ISP&#39;</span><span class="p">][</span><span class="n">mask</span><span class="p">],</span> <span class="n">cat</span><span class="p">[</span><span class="s">&#39;PSP&#39;</span><span class="p">][</span><span class="n">mask</span><span class="p">],</span>
+                                                                       <span class="n">cat</span><span class="p">[</span><span class="s">&#39;e_ISP&#39;</span><span class="p">][</span><span class="n">mask</span><span class="p">],</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;e_PSP&#39;</span><span class="p">][</span><span class="n">mask</span><span class="p">],</span>
+                                                                       <span class="s">&#39;SPASS&#39;</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">workdir</span><span class="o">=</span><span class="n">dir_ps</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">18</span><span class="p">,</span><span class="mi">100</span><span class="p">]:</span>
+        <span class="n">flag</span><span class="p">,</span><span class="n">fpol</span><span class="p">,</span><span class="n">errfpol</span><span class="o">=</span> <span class="n">read_galluzzi_fpol_dat</span><span class="p">(</span><span class="n">dir_ps</span><span class="o">+</span><span class="s">&#39;m&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">+</span><span class="s">&#39;_resampling.dat&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">f</span><span class="o">==</span><span class="mi">100</span><span class="p">:</span>
+            <span class="n">resampbool</span><span class="o">=</span><span class="bp">True</span>
+            <span class="n">nbins</span><span class="o">=</span><span class="mi">10</span>
+            <span class="n">string</span><span class="o">=</span><span class="s">&#39;_ALMA&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nbins</span><span class="o">=</span><span class="mi">15</span>
+            <span class="n">string</span><span class="o">=</span><span class="s">&#39;&#39;</span>
+            <span class="n">resampbool</span><span class="o">=</span><span class="bp">True</span>
+        <span class="n">idx</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="n">freqs</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">=</span><span class="n">f</span>
+        <span class="n">pimedian</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="n">pisquare</span><span class="p">[</span><span class="n">idx</span> <span class="p">],</span> <span class="n">deltapisq</span><span class="p">[</span><span class="n">idx</span> <span class="p">],</span><span class="n">deltapim</span><span class="p">[</span><span class="n">idx</span> <span class="p">],</span> <span class="n">pimean</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">deltapi</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">=</span><span class="n">fitting_lognormal_from_fpol</span><span class="p">(</span><span class="n">fpol</span><span class="p">,</span><span class="n">errfpol</span><span class="p">,</span>
+		 																		<span class="n">flag</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">+</span><span class="s">&#39;GHz&#39;</span><span class="o">+</span><span class="n">string</span><span class="p">,</span><span class="n">workdir</span><span class="o">=</span><span class="n">dir_ps</span><span class="p">,</span>
+																	<span class="n">fig</span><span class="o">=</span><span class="n">f</span><span class="p">,</span> <span class="n">nbins</span><span class="o">=</span><span class="n">nbins</span><span class="p">,</span> <span class="n">resampling</span><span class="o">=</span><span class="n">resampbool</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">data</span><span class="o">=</span> <span class="n">read_jvas_catalog</span><span class="p">(</span><span class="n">dir_ps</span><span class="o">+</span><span class="s">&#39;jvas_fsrq_ned.dat&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">flagjvas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_less_equal</span><span class="p">(</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">x</span><span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s">&#39;efpol&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">mask</span>
+    <span class="n">idx</span><span class="o">+=</span><span class="mi">1</span>
+    <span class="n">freqs</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">=</span><span class="mf">8.4</span>
+    <span class="n">pimedian</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="n">pisquare</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">deltapisq</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">deltapim</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">pimean</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">deltapi</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">=</span><span class="n">fitting_lognormal_from_fpol</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">&#39;fpol&#39;</span><span class="p">]</span><span class="o">/</span><span class="mf">100.</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s">&#39;efpol&#39;</span><span class="p">]</span><span class="o">/</span><span class="mf">100.</span><span class="p">,</span> <span class="n">flagjvas</span><span class="p">,</span>
+                                                                  <span class="s">&#39;JVAS&#39;</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">nbins</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span><span class="n">resampling</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">workdir</span><span class="o">=</span><span class="n">dir_ps</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span> <span class="p">)</span>
+
+    <span class="n">planck_catalogs</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">dir_ps</span><span class="o">+</span><span class="s">&#39;COM_PCCS_*&#39;</span><span class="p">))</span>
+    <span class="n">channels</span> <span class="o">=</span><span class="p">[</span><span class="n">catalog</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">catalog</span> <span class="ow">in</span> <span class="n">planck_catalogs</span><span class="p">]</span>
+    <span class="n">idx_sort</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">((</span><span class="n">channels</span><span class="p">),</span><span class="n">axis</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">kind</span><span class="o">=</span><span class="s">&#39;quicksort&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">catalog</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndenumerate</span><span class="p">(</span><span class="n">planck_catalogs</span><span class="p">[</span><span class="n">idx_sort</span><span class="p">]):</span>
+    <span class="c">#READ CATALOGUES</span>
+        <span class="n">ch</span> <span class="o">=</span><span class="n">catalog</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">freq</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">exclude_HFI_data</span> <span class="ow">and</span> <span class="n">freq</span><span class="o">&gt;=</span><span class="mi">100</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">Iflux</span><span class="p">,</span><span class="n">Polflux</span><span class="p">,</span> <span class="n">eI</span><span class="p">,</span> <span class="n">eP</span><span class="o">=</span><span class="n">extract_flux_from_planck_catalog</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span><span class="n">freq</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">idx</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="n">freqs</span><span class="p">[</span><span class="n">idx</span> <span class="p">]</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span>
+        <span class="n">pimedian</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="n">pisquare</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="n">deltapisq</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="n">deltapim</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">pimean</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">deltapi</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">=</span><span class="n">fitting_lognormal_from_fluxes</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Iflux</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Polflux</span><span class="p">),</span>
+                                                                        	<span class="n">eI</span><span class="p">,</span> <span class="n">eP</span><span class="p">,</span><span class="n">ch</span><span class="o">+</span><span class="s">&#39;GHz&#39;</span><span class="p">,</span><span class="n">workdir</span><span class="o">=</span><span class="n">dir_ps</span><span class="p">,</span>
+																		<span class="n">fig</span><span class="o">=</span><span class="n">freq</span><span class="p">,</span> <span class="n">nbins</span><span class="o">=</span><span class="n">bins</span><span class="p">[</span><span class="n">freq</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+    <span class="n">cat</span><span class="p">,</span><span class="n">dict_cat</span><span class="o">=</span> <span class="n">read_atca_catalog</span><span class="p">(</span><span class="n">dir_ps</span><span class="o">+</span><span class="s">&#39;at20_catalog.tsv&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">alpha</span><span class="o">=</span><span class="n">get_spectral_index</span><span class="p">(</span><span class="mf">4.8</span><span class="p">,</span><span class="mf">8.6</span><span class="p">,</span> <span class="n">cat</span><span class="p">[</span><span class="s">&#39;S5&#39;</span><span class="p">],</span> <span class="n">cat</span><span class="p">[</span><span class="s">&#39;S8&#39;</span><span class="p">])</span>
+    <span class="c"># define FSRQs at low freqs and consider them at 20 GHz</span>
+
+    <span class="k">if</span> <span class="n">include_steep</span> <span class="p">:</span>
+        <span class="n">maskflat</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_less</span><span class="p">((</span><span class="n">alpha</span><span class="p">)</span> <span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">mask</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">maskflat</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_inside</span><span class="p">((</span><span class="n">alpha</span><span class="p">)</span> <span class="p">,</span><span class="o">-</span><span class="mf">0.5</span> <span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">mask</span>
+
+    <span class="c"># mask nan AND SSRQ in fpol</span>
+    <span class="n">mask1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_invalid</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;m5</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span> <span class="p">,</span> <span class="n">maskflat</span> <span class="p">)</span>
+    <span class="n">mask2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_invalid</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;m8&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span> <span class="p">,</span> <span class="n">maskflat</span><span class="p">)</span>
+    <span class="c"># flagging the upper limits</span>
+    <span class="n">flag1</span><span class="o">=</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_invalid</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;e_P5&#39;</span><span class="p">][</span><span class="n">mask1</span><span class="p">])</span><span class="o">.</span><span class="n">mask</span> <span class="p">)</span>
+    <span class="n">flag2</span><span class="o">=</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_invalid</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;e_P8&#39;</span><span class="p">][</span><span class="n">mask2</span><span class="p">])</span><span class="o">.</span><span class="n">mask</span> <span class="p">)</span>
+    <span class="n">fpol1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;m5</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">][</span><span class="n">mask1</span><span class="p">]</span> <span class="p">)</span><span class="o">/</span><span class="mf">100.</span>
+    <span class="n">fpol2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;m8&#39;</span><span class="p">][</span><span class="n">mask2</span><span class="p">]</span> <span class="p">)</span> <span class="o">/</span><span class="mf">100.</span>
+    <span class="n">erfpol1</span><span class="o">=</span><span class="n">sigmaf</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;P5&#39;</span><span class="p">][</span><span class="n">mask1</span><span class="p">]</span> <span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;S5&#39;</span><span class="p">][</span><span class="n">mask1</span><span class="p">]</span> <span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;e_P5&#39;</span><span class="p">][</span><span class="n">mask1</span><span class="p">]</span> <span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;e_S5&#39;</span><span class="p">][</span><span class="n">mask1</span><span class="p">]</span> <span class="p">))</span>
+    <span class="n">erfpol2</span><span class="o">=</span><span class="n">sigmaf</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;P8&#39;</span><span class="p">][</span><span class="n">mask2</span><span class="p">]</span> <span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;S8&#39;</span><span class="p">][</span><span class="n">mask2</span><span class="p">]</span> <span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;e_P8&#39;</span><span class="p">][</span><span class="n">mask2</span><span class="p">]</span> <span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;e_S8&#39;</span><span class="p">][</span><span class="n">mask2</span><span class="p">]</span> <span class="p">))</span>
+    <span class="n">idx</span> <span class="o">+=</span><span class="mi">1</span>
+    <span class="n">freqs</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">=</span><span class="mf">4.8</span>
+    <span class="n">pimedian</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="n">pisquare</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="n">deltapisq</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="n">deltapim</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">pimean</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">deltapi</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">=</span><span class="n">fitting_lognormal_from_fpol</span><span class="p">(</span><span class="n">fpol1</span><span class="p">,</span>
+                                                                                        <span class="n">erfpol1</span><span class="p">,</span> <span class="n">flag1</span><span class="p">,</span> <span class="s">&#39;5GHz&#39;</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">workdir</span><span class="o">=</span><span class="n">dir_ps</span><span class="p">,</span>
+                                                                                    	<span class="n">nbins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">resampling</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">idx</span> <span class="o">+=</span><span class="mi">1</span>
+    <span class="n">freqs</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">=</span><span class="mf">9.</span>
+    <span class="n">pimedian</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="n">pisquare</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="n">deltapisq</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="n">deltapim</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">pimean</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">deltapi</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">=</span><span class="n">fitting_lognormal_from_fpol</span><span class="p">(</span><span class="n">fpol2</span><span class="p">,</span>
+                                                                                        <span class="n">erfpol2</span><span class="p">,</span> <span class="n">flag2</span><span class="p">,</span> <span class="s">&#39;8GHz&#39;</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span><span class="n">workdir</span><span class="o">=</span><span class="n">dir_ps</span><span class="p">,</span>
+                                                                                    	<span class="n">nbins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>  <span class="n">resampling</span><span class="o">=</span><span class="bp">True</span>  <span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">idx</span><span class="o">+=</span><span class="mi">1</span>
+    <span class="n">cat</span><span class="p">,</span> <span class="n">dict_catalog</span><span class="o">=</span> <span class="n">read_IRAM_catalog</span><span class="p">(</span><span class="n">dir_ps</span><span class="o">+</span><span class="s">&#39;iram_catalog.tsv&#39;</span><span class="p">)</span>
+    <span class="n">msk</span> <span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_not_equal</span><span class="p">(</span> <span class="n">cat</span><span class="p">[</span><span class="s">&#39;mL&#39;</span><span class="p">]</span> <span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="p">)</span><span class="o">.</span><span class="n">mask</span>
+    <span class="n">fpol</span><span class="o">=</span> <span class="n">cat</span><span class="p">[</span><span class="s">&#39;mL&#39;</span><span class="p">][</span><span class="n">msk</span><span class="p">]</span>
+    <span class="n">errfpol</span><span class="o">=</span> <span class="n">cat</span><span class="p">[</span><span class="s">&#39;e_mL&#39;</span><span class="p">][</span><span class="n">msk</span><span class="p">]</span>
+    <span class="n">flag</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">errfpol</span> <span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="p">)</span><span class="o">.</span><span class="n">mask</span>
+    <span class="n">freqs</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">=</span><span class="mi">89</span>
+    <span class="n">pimedian</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="n">pisquare</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">deltapisq</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">deltapim</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">pimean</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">deltapi</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">=</span><span class="n">fitting_lognormal_from_fpol</span><span class="p">(</span><span class="n">fpol</span><span class="o">/</span><span class="mf">100.</span><span class="p">,</span> <span class="n">errfpol</span><span class="o">/</span><span class="mf">100.</span><span class="p">,</span>
+	 																													<span class="n">flag</span><span class="p">,</span><span class="s">&#39;89GHz&#39;</span><span class="p">,</span> <span class="n">nbins</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span><span class="n">workdir</span><span class="o">=</span><span class="n">dir_ps</span><span class="p">,</span>
+																														<span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">cat</span><span class="p">,</span> <span class="n">dict_catalog</span><span class="o">=</span> <span class="n">read_VLA_catalog</span><span class="p">(</span><span class="n">dir_ps</span><span class="o">+</span><span class="s">&#39;vla_catalog.tsv&#39;</span><span class="p">)</span>
+    <span class="n">alpha1</span><span class="o">=</span><span class="n">get_spectral_index</span><span class="p">(</span><span class="n">S1</span><span class="o">=</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;SC&#39;</span><span class="p">],</span> <span class="n">S2</span><span class="o">=</span><span class="n">cat</span><span class="p">[</span><span class="s">&#39;SX&#39;</span><span class="p">],</span><span class="n">v1</span><span class="o">=</span><span class="mf">4.86</span> <span class="p">,</span> <span class="n">v2</span><span class="o">=</span><span class="mf">8.46</span> <span class="p">)</span>
+    <span class="k">if</span> <span class="n">include_steep</span> <span class="p">:</span>
+        <span class="n">flats</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_less</span><span class="p">(</span><span class="n">alpha1</span><span class="p">,</span> <span class="mi">0</span> <span class="p">)</span><span class="o">.</span><span class="n">mask</span>
+        <span class="n">vlabins</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;C&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span><span class="s">&#39;X&#39;</span><span class="p">:</span><span class="mi">8</span><span class="p">,</span> <span class="s">&#39;K&#39;</span><span class="p">:</span><span class="mi">8</span><span class="p">,</span> <span class="s">&#39;Q&#39;</span><span class="p">:</span><span class="mi">6</span><span class="p">}</span>
+        <span class="n">bands</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;C&#39;</span><span class="p">:</span><span class="mf">5.6</span><span class="p">,</span><span class="s">&#39;X&#39;</span><span class="p">:</span><span class="mf">8.46</span><span class="p">,</span> <span class="s">&#39;K&#39;</span><span class="p">:</span><span class="mf">22.46</span><span class="p">}</span>
+    <span class="k">else</span> <span class="p">:</span>
+        <span class="n">vlabins</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;C&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span><span class="s">&#39;X&#39;</span><span class="p">:</span><span class="mi">8</span><span class="p">,</span> <span class="s">&#39;K&#39;</span><span class="p">:</span><span class="mi">12</span><span class="p">,</span> <span class="s">&#39;Q&#39;</span><span class="p">:</span><span class="mi">12</span><span class="p">}</span>
+        <span class="n">flats</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_inside</span><span class="p">(</span><span class="n">alpha1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">0</span> <span class="p">)</span><span class="o">.</span><span class="n">mask</span>
+        <span class="n">bands</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;C&#39;</span><span class="p">:</span><span class="mf">5.6</span><span class="p">,</span><span class="s">&#39;X&#39;</span><span class="p">:</span><span class="mf">8.46</span><span class="p">,</span> <span class="s">&#39;K&#39;</span><span class="p">:</span><span class="mf">22.46</span><span class="p">,</span> <span class="s">&#39;Q&#39;</span><span class="p">:</span><span class="mf">43.34</span><span class="p">}</span>
+
+
+    <span class="k">for</span> <span class="n">b</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">bands</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+	    <span class="n">msk</span> <span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_not_equal</span><span class="p">(</span> <span class="n">cat</span><span class="p">[</span><span class="s">&#39;p&#39;</span><span class="o">+</span><span class="n">b</span><span class="p">]</span> <span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="p">)</span><span class="o">.</span><span class="n">mask</span>
+	    <span class="n">mask1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">flats</span><span class="p">,</span> <span class="n">msk</span> <span class="p">)</span>
+	    <span class="n">fpol</span><span class="o">=</span> <span class="n">cat</span><span class="p">[</span><span class="s">&#39;p&#39;</span><span class="o">+</span><span class="n">b</span><span class="p">][</span><span class="n">mask1</span><span class="p">]</span>
+	    <span class="n">errfpol</span><span class="o">=</span> <span class="n">cat</span><span class="p">[</span><span class="s">&#39;e_p&#39;</span><span class="o">+</span><span class="n">b</span><span class="p">][</span><span class="n">mask1</span><span class="p">]</span>
+	    <span class="n">flag</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">errfpol</span> <span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="p">)</span><span class="o">.</span><span class="n">mask</span>
+	    <span class="n">idx</span><span class="o">+=</span><span class="mi">1</span>
+	    <span class="n">freqs</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">=</span><span class="n">v</span>
+	    <span class="n">pimedian</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="n">pisquare</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">deltapisq</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">deltapim</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">pimean</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">deltapi</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">=</span>  <span class="n">fitting_lognormal_from_fpol</span><span class="p">(</span><span class="n">fpol</span><span class="o">/</span><span class="mi">100</span><span class="p">,</span> <span class="n">errfpol</span><span class="o">/</span><span class="mf">100.</span><span class="p">,</span>
+	                                                                                                        <span class="n">flag</span><span class="p">,</span> <span class="s">&#39;VLA_&#39;</span><span class="o">+</span><span class="n">b</span><span class="o">+</span><span class="s">&#39;_band&#39;</span><span class="p">,</span><span class="n">workdir</span><span class="o">=</span><span class="n">dir_ps</span><span class="p">,</span>
+																													 <span class="n">nbins</span><span class="o">=</span><span class="n">vlabins</span><span class="p">[</span><span class="n">b</span><span class="p">]</span>  <span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+    <span class="n">sqrtp</span><span class="p">,</span> <span class="n">deltasqrtp</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">pisquare</span><span class="p">),</span> <span class="p">(</span><span class="n">deltapisq</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">pisquare</span><span class="p">)</span>
+    <span class="n">fs</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">bins</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+    <span class="n">fitfreq</span><span class="o">=</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">freqs</span><span class="p">,</span> <span class="n">fs</span><span class="o">+</span><span class="mi">3</span><span class="p">))</span> <span class="p">)</span>
+    <span class="n">data</span><span class="o">=</span>  <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">sqrtp</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bonaveravals</span><span class="p">)))</span>
+    <span class="n">errors</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">deltasqrtp</span><span class="p">,</span><span class="n">bonaveraerrs</span><span class="p">))</span>
+
+    <span class="n">pop</span><span class="p">,</span><span class="n">cov</span><span class="o">=</span><span class="n">so</span><span class="o">.</span><span class="n">curve_fit</span><span class="p">(</span><span class="n">linfunc</span><span class="p">,</span> <span class="n">fitfreq</span>  <span class="p">,</span><span class="n">data</span>  <span class="p">,</span><span class="n">sigma</span><span class="o">=</span><span class="n">errors</span><span class="p">)</span>
+
+    <span class="n">A</span> <span class="p">,</span> <span class="n">B</span><span class="o">=</span> <span class="n">pop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">u</span><span class="o">.</span><span class="n">gigahertz</span><span class="p">,</span> <span class="n">pop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">sigmaA</span><span class="p">,</span> <span class="n">sigmaB</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">cov</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="n">u</span><span class="o">.</span><span class="n">gigahertz</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">cov</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">sigmaA</span><span class="p">,</span> <span class="n">sigmaB</span>
+</div>
+<div class="viewcode-block" id="compute_dNdP"><a class="viewcode-back" href="../modules.html#pointsource_utilities.compute_dNdP">[docs]</a><span class="k">def</span> <span class="nf">compute_dNdP</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">dNdS</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">Np_quad</span><span class="o">=</span><span class="mi">32</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the convolution of differential number counts with the lognormal distribution function, i.e.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        n(P) = \int_{P=S_0} ^{\infty} {dS}/ {S} \mathcal{P} (\Pi) n(S)</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    - `A, mu, sigma`: {floats}</span>
+<span class="sd">        lognormal best fit values computed from :func:`Stats.fitting_lognormal_from_fpol` and :func:`Stats.fitting_lognormal_from_fluxes`.</span>
+<span class="sd">    - `dNdS`:{func}</span>
+<span class="sd">        interpolated differential number counts</span>
+<span class="sd">    - `S`:{array}</span>
+<span class="sd">        flux densities</span>
+<span class="sd">    - `Np_quad`:{int}</span>
+<span class="sd">        number of quadrature points.</span>
+
+
+<span class="sd">    **Returns**</span>
+
+<span class="sd">    - `Pbin`: {array}</span>
+<span class="sd">        polarized fluxes</span>
+<span class="sd">    - `interpolated_dNdP`:{func}</span>
+<span class="sd">        interpolated polarized differential number counts.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logf</span><span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">lognormal_distribution</span><span class="p">((</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mf">100.</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span><span class="n">sigma</span><span class="p">)</span>
+    <span class="n">Normalization</span><span class="o">=</span> <span class="n">integrate</span><span class="o">.</span><span class="n">quad</span><span class="p">(</span><span class="n">logf</span><span class="p">,</span><span class="n">a</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">1</span>  <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">dNdP</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Np_quad</span><span class="p">)</span>
+    <span class="n">Pbin</span> <span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Np_quad</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">P</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndenumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">Np_quad</span><span class="p">)):</span>
+        <span class="n">logfunc</span><span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">lognormal_distribution</span><span class="p">((</span><span class="n">P</span><span class="o">/</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mf">100.</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span><span class="n">sigma</span><span class="p">)</span><span class="o">/</span><span class="n">Normalization</span>
+        <span class="n">integrand</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">logfunc</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">*</span><span class="n">dNdS</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="n">x</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">dNdP</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="n">err</span><span class="o">=</span> <span class="n">integrate</span><span class="o">.</span><span class="n">quad</span><span class="p">(</span><span class="n">integrand</span><span class="p">,</span><span class="n">a</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">S</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">value</span> <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">dNdP</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="n">err</span><span class="o">=</span> <span class="n">integrate</span><span class="o">.</span><span class="n">quad</span><span class="p">(</span><span class="n">integrand</span><span class="p">,</span><span class="n">a</span><span class="o">=</span><span class="n">S</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">S</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">value</span> <span class="p">)</span>
+
+        <span class="n">Pbin</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span>  <span class="n">P</span>
+    <span class="n">interpolated_dNdP</span><span class="o">=</span> <span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="n">Pbin</span> <span class="p">,</span> <span class="n">dNdP</span> <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Pbin</span><span class="p">,</span> <span class="n">interpolated_dNdP</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">PS4C 0.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2017, Giuseppe Puglisi.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

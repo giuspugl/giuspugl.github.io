@@ -1,0 +1,544 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>IO &mdash; PS4C 0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="PS4C 0.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">PS4C 0.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for IO</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c">#   IO.PY</span>
+<span class="c">#   functions to read input catalogues and to save point source collections.</span>
+<span class="c">#</span>
+<span class="c">#   date: 2017-12-21</span>
+<span class="c">#   author: GIUSEPPE PUGLISI</span>
+<span class="c">#</span>
+<span class="c">#   Copyright (C) 2017   Giuseppe Puglisi    giuspugl@sissa.it</span>
+<span class="c">#</span>
+
+
+
+
+<span class="kn">import</span> <span class="nn">healpy</span> <span class="kn">as</span> <span class="nn">hp</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">h5py</span> <span class="kn">as</span> <span class="nn">h5</span>
+<span class="kn">from</span> <span class="nn">PointSources</span> <span class="kn">import</span> <span class="o">*</span>
+
+<div class="viewcode-block" id="extract_flux_from_planck_catalog"><a class="viewcode-back" href="../modules.html#IO.extract_flux_from_planck_catalog">[docs]</a><span class="k">def</span> <span class="nf">extract_flux_from_planck_catalog</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span><span class="n">freq</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read PCCS2 catalog at a given frequency.</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    - `catalog`:{string}</span>
+<span class="sd">    - `freq`:{float}</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">pccs</span><span class="o">=</span><span class="n">hp</span><span class="o">.</span><span class="n">mrdfits</span><span class="p">(</span><span class="n">catalog</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;verbose&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">False</span>
+    <span class="c">#consider all the point sources found on the catalog</span>
+    <span class="k">if</span> <span class="n">freq</span><span class="o">&lt;=</span><span class="mi">70</span><span class="p">:</span>
+        <span class="n">LFI</span><span class="o">=</span><span class="bp">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">LFI</span><span class="o">=</span><span class="bp">False</span>
+    <span class="n">Nsource</span><span class="p">,</span> <span class="n">pslist</span><span class="o">=</span><span class="n">search_in_catalogue</span><span class="p">(</span><span class="n">pccs</span><span class="p">,</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="mi">90</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mf">360.</span><span class="p">,</span><span class="n">coord</span><span class="o">=</span><span class="s">&#39;Gal&#39;</span><span class="p">,</span> <span class="n">LFI</span><span class="o">=</span><span class="n">LFI</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">])</span>
+
+    <span class="n">Iflux</span><span class="p">,</span><span class="n">Polflux</span><span class="p">,</span> <span class="n">eI</span><span class="p">,</span> <span class="n">eP</span><span class="o">=</span><span class="p">[],[],[],[]</span>
+    <span class="k">for</span> <span class="n">ps</span> <span class="ow">in</span> <span class="n">pslist</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ps</span><span class="o">.</span><span class="n">polflux</span> <span class="o">==</span><span class="mi">0</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">ps</span><span class="o">.</span><span class="n">polflux</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Polflux</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ps</span><span class="o">.</span><span class="n">polflux</span><span class="p">)</span>
+            <span class="n">eP</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ps</span><span class="o">.</span><span class="n">polerr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ps</span><span class="o">.</span><span class="n">resolved</span><span class="p">:</span>
+                <span class="n">Iflux</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ps</span><span class="o">.</span><span class="n">gauflux</span><span class="p">)</span>
+                <span class="n">eI</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ps</span><span class="o">.</span><span class="n">gauerr</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">Iflux</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ps</span><span class="o">.</span><span class="n">detflux</span><span class="p">)</span>
+                <span class="n">eI</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ps</span><span class="o">.</span><span class="n">deterr</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Iflux</span><span class="p">,</span><span class="n">Polflux</span><span class="p">,</span> <span class="n">eI</span><span class="p">,</span> <span class="n">eP</span>
+
+</div>
+<div class="viewcode-block" id="write_ps_selection_to_hdf5"><a class="viewcode-back" href="../modules.html#IO.write_ps_selection_to_hdf5">[docs]</a><span class="k">def</span> <span class="nf">write_ps_selection_to_hdf5</span><span class="p">(</span><span class="n">ps_list</span><span class="p">,</span><span class="n">filename</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    From a list of :class:`PointSources` save the list into a hdf5 binary file.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+
+	<span class="n">f</span><span class="o">=</span><span class="n">h5</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s">&quot;w&quot;</span><span class="p">)</span>
+	<span class="n">n_sources</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">ps_list</span><span class="p">)</span>
+	<span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s">&#39;N_sources&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">n_sources</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">h5</span><span class="o">.</span><span class="n">h5t</span><span class="o">.</span><span class="n">STD_I32BE</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">n_sources</span><span class="p">)</span>
+
+	<span class="k">for</span> <span class="n">p</span><span class="p">,</span><span class="n">idx</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ps_list</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_sources</span><span class="p">)):</span>
+		<span class="n">g</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s">&quot;PointSource_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
+		<span class="n">d</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+		<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+			<span class="n">g</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+
+	<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="read_ps_selection_from_hdf5"><a class="viewcode-back" href="../modules.html#IO.read_ps_selection_from_hdf5">[docs]</a><span class="k">def</span> <span class="nf">read_ps_selection_from_hdf5</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read a list of  :class:`PointSources` from a hdf5 binary file.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">f</span><span class="o">=</span><span class="n">h5</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s">&quot;r&quot;</span><span class="p">)</span>
+	<span class="n">n_sources</span><span class="o">=</span><span class="n">f</span><span class="p">[</span><span class="s">&#39;N_sources&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+	<span class="n">ps_list</span><span class="o">=</span><span class="p">[]</span>
+
+	<span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">n_sources</span><span class="p">):</span>
+		<span class="n">g</span><span class="o">=</span><span class="n">f</span><span class="p">[</span><span class="s">&quot;PointSource_&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">)]</span>
+		<span class="n">d</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="n">v</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+		<span class="n">ps_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">PointSource</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">,</span><span class="n">d</span><span class="p">))</span>
+	<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+	<span class="k">return</span> <span class="n">ps_list</span>
+</div>
+<div class="viewcode-block" id="project_sources2map"><a class="viewcode-back" href="../modules.html#IO.project_sources2map">[docs]</a><span class="k">def</span> <span class="nf">project_sources2map</span><span class="p">(</span><span class="n">ps_list</span><span class="p">,</span><span class="n">nside</span><span class="p">,</span><span class="n">omega_beam</span><span class="p">,</span><span class="n">polarization</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">forecast_pol</span><span class="o">=</span><span class="bp">None</span> <span class="p">,</span><span class="n">muK</span><span class="o">=</span><span class="mf">1e6</span> <span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Project the list of  :class:`PointSources` into  a healpix map</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">source_map</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;I&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">hp</span><span class="o">.</span><span class="n">nside2npix</span><span class="p">(</span><span class="n">nside</span><span class="p">))}</span>
+	<span class="k">if</span> <span class="n">polarization</span><span class="p">:</span>
+		<span class="n">source_map</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;I&#39;</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">hp</span><span class="o">.</span><span class="n">nside2npix</span><span class="p">(</span><span class="n">nside</span><span class="p">)),</span><span class="s">&#39;Q&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">hp</span><span class="o">.</span><span class="n">nside2npix</span><span class="p">(</span><span class="n">nside</span><span class="p">)),</span><span class="s">&#39;U&#39;</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">hp</span><span class="o">.</span><span class="n">nside2npix</span><span class="p">(</span><span class="n">nside</span><span class="p">))}</span>
+	<span class="n">cres</span><span class="o">=</span><span class="mi">0</span>
+	<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">ps_list</span><span class="p">:</span>
+		<span class="k">if</span> <span class="n">forecast_pol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+			<span class="n">p</span><span class="o">.</span><span class="n">forecast_polarization</span><span class="p">(</span><span class="n">forecast_pol</span><span class="p">)</span>
+
+		<span class="n">center</span><span class="o">=</span><span class="n">hp</span><span class="o">.</span><span class="n">ang2vec</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="mi">90</span> <span class="o">-</span> <span class="n">p</span><span class="o">.</span><span class="n">glat</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">glon</span><span class="p">)</span> <span class="p">)</span>
+		<span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">resolved</span><span class="p">:</span>
+			<span class="n">cres</span><span class="o">+=</span><span class="mi">1</span>
+			<span class="n">flux</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">gauflux</span>
+			<span class="n">radius</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">omega_eff</span><span class="o">/</span><span class="mf">60.</span><span class="p">)</span> <span class="c"># the angle is in arcmin</span>
+		<span class="k">else</span> <span class="p">:</span>
+			<span class="n">flux</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">detflux</span>
+			<span class="n">radius</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">omega_beam</span><span class="o">/</span><span class="mf">60.</span><span class="p">)</span>
+		<span class="n">listpix</span><span class="o">=</span><span class="n">hp</span><span class="o">.</span><span class="n">query_disc</span><span class="p">(</span><span class="n">nside</span><span class="p">,</span><span class="n">center</span><span class="p">,</span> <span class="n">radius</span><span class="p">)</span>
+		<span class="n">T_b</span><span class="o">=</span><span class="n">flux2brightness_temp</span><span class="p">(</span><span class="n">flux</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+		<span class="n">source_map</span><span class="p">[</span><span class="s">&#39;I&#39;</span><span class="p">][</span><span class="n">listpix</span><span class="p">]</span><span class="o">=</span><span class="n">T_b</span> <span class="o">*</span><span class="n">muK</span>
+		<span class="k">if</span> <span class="n">polarization</span><span class="p">:</span>
+			<span class="n">tpol</span><span class="o">=</span><span class="n">flux2brightness_temp</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">fpol</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+			<span class="n">source_map</span><span class="p">[</span><span class="s">&#39;Q&#39;</span><span class="p">][</span><span class="n">listpix</span><span class="p">]</span><span class="o">=</span>  <span class="n">tpol</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">p</span><span class="o">.</span><span class="n">polangle</span><span class="p">)</span><span class="o">*</span><span class="n">muK</span>
+			<span class="n">source_map</span><span class="p">[</span><span class="s">&#39;U&#39;</span><span class="p">][</span><span class="n">listpix</span><span class="p">]</span><span class="o">=</span> <span class="o">-</span> <span class="n">tpol</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">p</span><span class="o">.</span><span class="n">polangle</span><span class="p">)</span><span class="o">*</span><span class="n">muK</span> <span class="c">#for this - sign check Planck 2015 PCCS2 paper</span>
+
+
+	<span class="k">print</span> <span class="s">&quot;extended sources </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="n">cres</span>
+	<span class="k">return</span> <span class="p">[</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">source_map</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+
+</div>
+<div class="viewcode-block" id="search_in_catalogue"><a class="viewcode-back" href="../modules.html#IO.search_in_catalogue">[docs]</a><span class="k">def</span> <span class="nf">search_in_catalogue</span><span class="p">(</span><span class="n">catalogue</span><span class="p">,</span><span class="n">minlat</span><span class="p">,</span><span class="n">maxlat</span><span class="p">,</span><span class="n">minlong</span><span class="p">,</span><span class="n">maxlong</span><span class="p">,</span><span class="n">coord</span><span class="o">=</span><span class="s">&#39;EQ&#39;</span><span class="p">,</span>
+                            <span class="n">pol_sensitive</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">LFI</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="bp">True</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Look for point sources within :math:`b_{min}&lt; b&lt;b_{max}` and :math:`\ell_{min}&lt;\ell&lt;\ell_{max}` in a catalogue .</span>
+
+<span class="sd">	**Returns**</span>
+
+<span class="sd">	- `counter`:{int}</span>
+<span class="sd">		number of sources found</span>
+<span class="sd">	- `point_sources`:{list}</span>
+<span class="sd">		list of the point source found within the ranges</span>
+
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">if</span> <span class="n">pol_sensitive</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">LFI</span><span class="p">:</span>
+		<span class="n">dict_catalog</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;id&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#39;glon&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="s">&#39;glat&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="s">&#39;ra&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s">&#39;dec&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span> <span class="s">&#39;detflux&#39;</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span><span class="s">&#39;deterr&#39;</span><span class="p">:</span><span class="mi">6</span><span class="p">,</span> <span class="s">&#39;gauflux&#39;</span><span class="p">:</span><span class="mi">11</span><span class="p">,</span><span class="s">&#39;gauerr&#39;</span><span class="p">:</span><span class="mi">12</span><span class="p">,</span>\
+					<span class="s">&#39;omega_eff&#39;</span><span class="p">:</span><span class="mi">19</span><span class="p">,</span><span class="s">&#39;polflux&#39;</span><span class="p">:</span><span class="mi">20</span><span class="p">,</span><span class="s">&#39;polerr&#39;</span><span class="p">:</span><span class="mi">21</span><span class="p">,</span><span class="s">&#39;polangle&#39;</span><span class="p">:</span><span class="mi">22</span><span class="p">,</span><span class="s">&#39;polang_err&#39;</span><span class="p">:</span><span class="mi">23</span><span class="p">,</span><span class="s">&#39;resolved&#39;</span><span class="p">:</span><span class="mi">37</span><span class="p">,</span><span class="s">&#39;ext_val&#39;</span><span class="p">:</span><span class="mi">38</span><span class="p">}</span>
+	<span class="k">elif</span> <span class="n">pol_sensitive</span> <span class="ow">and</span> <span class="n">LFI</span><span class="p">:</span>
+		<span class="n">dict_catalog</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;id&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#39;glon&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="s">&#39;glat&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="s">&#39;ra&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s">&#39;dec&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span> <span class="s">&#39;detflux&#39;</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span><span class="s">&#39;deterr&#39;</span><span class="p">:</span><span class="mi">6</span><span class="p">,</span> <span class="s">&#39;gauflux&#39;</span><span class="p">:</span><span class="mi">11</span><span class="p">,</span><span class="s">&#39;gauerr&#39;</span><span class="p">:</span><span class="mi">12</span><span class="p">,</span>\
+					<span class="s">&#39;omega_eff&#39;</span><span class="p">:</span><span class="mi">19</span><span class="p">,</span><span class="s">&#39;polflux&#39;</span><span class="p">:</span><span class="mi">20</span><span class="p">,</span><span class="s">&#39;polerr&#39;</span><span class="p">:</span><span class="mi">21</span><span class="p">,</span><span class="s">&#39;polangle&#39;</span><span class="p">:</span><span class="mi">22</span><span class="p">,</span><span class="s">&#39;polang_err&#39;</span><span class="p">:</span><span class="mi">23</span><span class="p">,</span><span class="s">&#39;resolved&#39;</span><span class="p">:</span><span class="mi">30</span><span class="p">,</span><span class="s">&#39;ext_val&#39;</span><span class="p">:</span><span class="mi">31</span><span class="p">}</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="n">dict_catalog</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;id&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#39;glon&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="s">&#39;glat&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="s">&#39;ra&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s">&#39;dec&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span> <span class="s">&#39;detflux&#39;</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span><span class="s">&#39;deterr&#39;</span><span class="p">:</span><span class="mi">6</span><span class="p">,</span> <span class="s">&#39;gauflux&#39;</span><span class="p">:</span><span class="mi">11</span><span class="p">,</span><span class="s">&#39;gauerr&#39;</span><span class="p">:</span><span class="mi">12</span><span class="p">,</span>\
+					<span class="s">&#39;omega_eff&#39;</span><span class="p">:</span><span class="mi">19</span><span class="p">,</span><span class="s">&#39;resolved&#39;</span><span class="p">:</span><span class="mi">20</span><span class="p">,</span><span class="s">&#39;ext_val&#39;</span><span class="p">:</span><span class="mi">21</span><span class="p">}</span>
+	<span class="n">n_sources</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">catalogue</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+	<span class="n">counter</span><span class="o">=</span><span class="mi">0</span>
+	<span class="n">found</span><span class="o">=</span><span class="p">[]</span>
+
+	<span class="c">#</span>
+	<span class="k">if</span> <span class="n">coord</span><span class="o">==</span><span class="s">&#39;EQ&#39;</span><span class="p">:</span>
+		<span class="n">x1</span><span class="p">,</span><span class="n">x2</span><span class="o">=</span><span class="p">(</span><span class="n">catalogue</span><span class="p">[</span><span class="n">dict_catalog</span><span class="p">[</span><span class="s">&#39;ra&#39;</span><span class="p">]]),(</span><span class="n">catalogue</span><span class="p">[</span><span class="n">dict_catalog</span><span class="p">[</span><span class="s">&#39;dec&#39;</span><span class="p">]])</span>
+		<span class="n">limits</span><span class="o">=</span><span class="k">lambda</span> <span class="n">glong</span><span class="p">,</span><span class="n">glat</span><span class="p">:</span> <span class="p">((</span><span class="n">glong</span> <span class="o">&lt;=</span> <span class="n">minlong</span> <span class="ow">or</span>      <span class="n">maxlong</span><span class="o">&lt;=</span> <span class="n">glong</span><span class="p">)</span>   <span class="ow">and</span> <span class="p">(</span><span class="n">minlat</span><span class="o">&lt;=</span><span class="n">glat</span> <span class="ow">and</span> <span class="n">glat</span><span class="o">&lt;=</span><span class="n">maxlat</span><span class="p">))</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="n">x1</span><span class="p">,</span><span class="n">x2</span><span class="o">=</span><span class="p">(</span><span class="n">catalogue</span><span class="p">[</span><span class="n">dict_catalog</span><span class="p">[</span><span class="s">&#39;glon&#39;</span><span class="p">]]),(</span><span class="n">catalogue</span><span class="p">[</span><span class="n">dict_catalog</span><span class="p">[</span><span class="s">&#39;glat&#39;</span><span class="p">]])</span>
+		<span class="n">limits</span><span class="o">=</span><span class="k">lambda</span> <span class="n">glong</span><span class="p">,</span><span class="n">glat</span><span class="p">:</span> <span class="p">((</span><span class="n">minlong</span> <span class="o">&lt;=</span> <span class="n">glong</span> <span class="o">&lt;=</span><span class="n">maxlong</span><span class="p">)</span>   <span class="ow">and</span> <span class="p">(</span><span class="n">minlat</span><span class="o">&lt;=</span><span class="n">glat</span> <span class="o">&lt;=</span><span class="n">maxlat</span><span class="p">))</span>
+	<span class="n">mlow</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_where</span><span class="p">(</span><span class="mi">58</span><span class="o">&lt;</span> <span class="n">x2</span><span class="p">,</span><span class="n">x2</span><span class="p">)</span>
+	<span class="n">mup</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_where</span><span class="p">(</span><span class="n">x2</span><span class="o">&lt;</span><span class="mi">60</span><span class="p">,</span><span class="n">x2</span><span class="p">)</span>
+	<span class="n">masklat</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">mlow</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span><span class="n">mup</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+	<span class="k">for</span> <span class="n">idx</span><span class="p">,</span><span class="n">glong</span><span class="p">,</span><span class="n">glat</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">xrange</span><span class="p">(</span><span class="n">n_sources</span><span class="p">),</span> <span class="n">x1</span><span class="p">,</span><span class="n">x2</span><span class="p">):</span>
+
+		<span class="k">if</span> <span class="n">limits</span><span class="p">(</span><span class="n">glong</span><span class="p">,</span><span class="n">glat</span><span class="p">):</span>
+			<span class="n">found</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+			<span class="n">counter</span><span class="o">+=</span><span class="mi">1</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">continue</span>
+	<span class="k">if</span> <span class="n">verbose</span> <span class="p">:</span>
+		<span class="k">print</span> <span class="s">&quot; Found </span><span class="si">%d</span><span class="s">  sources within  deg=(</span><span class="si">%.1f</span><span class="s">,</span><span class="si">%.1f</span><span class="s">),ra=(</span><span class="si">%.1f</span><span class="s">,</span><span class="si">%.1f</span><span class="s">) .&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">counter</span><span class="p">,(</span><span class="n">minlat</span><span class="p">),(</span><span class="n">maxlat</span><span class="p">),(</span><span class="n">minlong</span><span class="p">),(</span><span class="n">maxlong</span><span class="p">))</span>
+
+	<span class="n">point_sources</span><span class="o">=</span><span class="p">[]</span>
+	<span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">found</span><span class="p">:</span>
+		<span class="n">point_sources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">PointSources</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="n">catalogue</span><span class="p">,</span><span class="n">dict_catalog</span><span class="p">,</span><span class="n">pol_sensitive</span><span class="o">=</span><span class="n">pol_sensitive</span><span class="p">))</span>
+		<span class="c">#print catalogue[dict_catalog[&#39;polerr&#39;]][f],catalogue[dict_catalog[&#39;polang_err&#39;]][f],catalogue[dict_catalog[&#39;deterr&#39;]][f],catalogue[dict_catalog[&#39;gauerr&#39;]][f]</span>
+	<span class="k">return</span> <span class="n">counter</span><span class="p">,</span><span class="n">point_sources</span>
+
+
+</div>
+<div class="viewcode-block" id="read_nvss_catalog"><a class="viewcode-back" href="../modules.html#IO.read_nvss_catalog">[docs]</a><span class="k">def</span> <span class="nf">read_nvss_catalog</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span> <span class="p">):</span>
+	<span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;verbose&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+	    <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">False</span>
+	<span class="n">f</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+	<span class="n">c</span><span class="o">=</span><span class="mi">0</span>
+	<span class="k">for</span> <span class="n">l</span> <span class="ow">in</span>  <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+		<span class="n">cols</span><span class="o">=</span><span class="n">l</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;|&#39;</span><span class="p">,</span><span class="mi">27</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+		<span class="n">c</span><span class="o">+=</span><span class="mi">1</span>
+		<span class="k">if</span> <span class="n">c</span><span class="o">==</span><span class="mi">3</span><span class="p">:</span>
+			<span class="n">nfields</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span>
+			<span class="n">dict_catalog</span><span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">val</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">val</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span><span class="nb">xrange</span><span class="p">(</span><span class="n">nfields</span><span class="p">))}</span>
+			<span class="n">catalog</span><span class="o">=</span><span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">dict_catalog</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+		<span class="k">if</span> <span class="n">c</span><span class="o">&gt;</span><span class="mi">3</span><span class="p">:</span>
+
+			<span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">i</span> <span class="ow">in</span> <span class="n">dict_catalog</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+				<span class="k">if</span> <span class="n">i</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+					<span class="n">catalog</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cols</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+				<span class="k">elif</span> <span class="n">i</span> <span class="o">==</span><span class="mi">1</span> <span class="p">:</span> <span class="c">#ra</span>
+					<span class="n">hh</span><span class="p">,</span><span class="n">mm</span><span class="p">,</span><span class="n">ss</span><span class="o">=</span> 				<span class="n">cols</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+					<span class="n">angle</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">hh</span><span class="p">)</span><span class="o">*</span><span class="mf">15.</span>  <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">mm</span><span class="p">)</span><span class="o">*</span><span class="mf">15.</span><span class="o">/</span><span class="mf">60.</span>  <span class="o">+</span><span class="nb">float</span><span class="p">(</span><span class="n">ss</span><span class="p">)</span><span class="o">*</span><span class="mf">15.</span><span class="o">/</span><span class="mi">3600</span><span class="p">)</span>
+
+					<span class="n">catalog</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">angle</span> <span class="p">)</span>
+				<span class="k">elif</span> <span class="n">i</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span> <span class="c">#dec</span>
+					<span class="n">dd</span><span class="p">,</span><span class="n">mm</span><span class="p">,</span><span class="n">ss</span><span class="o">=</span> <span class="n">cols</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+					<span class="n">s</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">dd</span><span class="p">))</span>
+					<span class="n">angle</span><span class="o">=</span><span class="n">s</span><span class="o">*</span><span class="p">(</span> <span class="n">s</span><span class="o">*</span><span class="nb">int</span><span class="p">(</span><span class="n">dd</span><span class="p">)</span><span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">mm</span><span class="p">)</span><span class="o">/</span><span class="mf">60.</span> <span class="o">+</span><span class="nb">float</span><span class="p">(</span><span class="n">ss</span><span class="p">)</span><span class="o">/</span><span class="mf">3600.</span><span class="p">)</span>
+					<span class="n">catalog</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">angle</span> <span class="p">)</span>
+
+				<span class="k">else</span><span class="p">:</span>
+					<span class="k">try</span><span class="p">:</span>
+						<span class="n">catalog</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">cols</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+					<span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+						<span class="n">catalog</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">]:</span>
+	       <span class="k">print</span> <span class="s">&quot;Read </span><span class="si">%d</span><span class="s"> total sources from </span><span class="si">%s</span><span class="s">. &quot;</span><span class="o">%</span><span class="p">(</span><span class="n">c</span>		<span class="o">-</span><span class="mi">3</span> <span class="p">,</span><span class="n">filename</span><span class="p">)</span>
+	<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+	<span class="k">return</span> <span class="n">catalog</span>
+
+</div>
+<div class="viewcode-block" id="read_number_counts"><a class="viewcode-back" href="../modules.html#IO.read_number_counts">[docs]</a><span class="k">def</span> <span class="nf">read_number_counts</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+	<span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;verbose&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+	    <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">False</span>
+	<span class="n">f</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+	<span class="n">c</span><span class="o">=</span><span class="mi">0</span>
+	<span class="c">#print np.loadtxt(filename,  comments=&#39;#&#39;, delimiter=&#39; &#39;  ,skiprows=3, unpack=False)</span>
+	<span class="k">for</span> <span class="n">l</span> <span class="ow">in</span>  <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+		<span class="k">if</span> <span class="n">c</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+			<span class="n">cols</span><span class="o">=</span><span class="n">l</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">,</span><span class="mi">6</span><span class="p">)</span>
+			<span class="n">nfields</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span>
+			<span class="n">dictd</span><span class="o">=</span> <span class="p">{</span><span class="n">val</span><span class="p">:</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">val</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span><span class="nb">xrange</span><span class="p">(</span><span class="n">nfields</span><span class="p">))}</span>
+			<span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">dictd</span><span class="o">.</span><span class="n">values</span><span class="p">()}</span>
+		<span class="k">if</span> <span class="n">c</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+			<span class="n">v</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">l</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s">&#39; &#39;</span><span class="p">)</span>
+			<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)):</span>
+				<span class="n">data</span><span class="p">[</span><span class="n">dictd</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+		<span class="n">c</span><span class="o">+=</span><span class="mi">1</span>
+	<span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;verbose&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+	       <span class="k">print</span> <span class="s">&quot;Read </span><span class="si">%d</span><span class="s">  lines from   &quot;</span><span class="o">%</span><span class="p">(</span><span class="n">c</span>		<span class="o">-</span><span class="mi">3</span> <span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+	<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+	<span class="k">return</span> <span class="n">data</span>
+
+</div>
+<div class="viewcode-block" id="read_spass_nvss_catalog"><a class="viewcode-back" href="../modules.html#IO.read_spass_nvss_catalog">[docs]</a><span class="k">def</span> <span class="nf">read_spass_nvss_catalog</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+	<span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;verbose&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+	    <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">False</span>
+	<span class="n">f</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+	<span class="n">c</span><span class="o">=</span><span class="mi">0</span>
+	<span class="n">fields</span><span class="o">=</span><span class="p">[]</span>
+	<span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+		<span class="n">li</span><span class="o">=</span><span class="n">l</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="n">li</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;#&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">li</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;---&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">li</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;deg&#39;</span><span class="p">):</span>
+			<span class="n">cols</span><span class="o">=</span><span class="n">l</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;;&#39;</span><span class="p">)[</span><span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+			<span class="c">#print cols</span>
+			<span class="k">if</span>  <span class="n">c</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+				<span class="c">#print cols</span>
+				<span class="n">fields</span><span class="o">=</span> <span class="n">cols</span>
+				<span class="n">nfields</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span>
+				<span class="n">dict_catalog</span><span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span><span class="nb">xrange</span><span class="p">(</span><span class="n">nfields</span><span class="p">))}</span>
+				<span class="n">catalog</span><span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">}</span>
+				<span class="c">#print catalog</span>
+			<span class="k">elif</span> <span class="n">c</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+				<span class="n">v</span><span class="o">=</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s">&#39;;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">]</span>
+				<span class="c">#print v, len(v)==nfields #fields.append(cols[4])</span>
+				<span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">k</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">fields</span><span class="p">):</span>
+					<span class="k">if</span> <span class="n">k</span><span class="o">==</span><span class="n">fields</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+						<span class="n">catalog</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cols</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+					<span class="k">else</span><span class="p">:</span>
+						<span class="n">catalog</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+			<span class="n">c</span><span class="o">+=</span><span class="mi">1</span>
+	<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+	<span class="c">#print catalog[&#39;NVSS&#39;]</span>
+	<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">catalog</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+		<span class="k">if</span> <span class="n">k</span><span class="o">==</span><span class="s">&#39;NVSS&#39;</span><span class="p">:</span> <span class="k">continue</span>
+		<span class="n">catalog</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">catalog</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+	<span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">]:</span> <span class="k">print</span> <span class="s">&quot;Read </span><span class="si">%d</span><span class="s"> total sources from </span><span class="si">%s</span><span class="s"> &quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">[</span><span class="s">&#39;NVSS&#39;</span><span class="p">])</span> <span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">catalog</span><span class="p">,</span><span class="n">dict_catalog</span>
+
+</div>
+<div class="viewcode-block" id="read_galluzzi_fpol_dat"><a class="viewcode-back" href="../modules.html#IO.read_galluzzi_fpol_dat">[docs]</a><span class="k">def</span> <span class="nf">read_galluzzi_fpol_dat</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;verbose&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">False</span>
+    <span class="n">arr</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">flag</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">arr</span><span class="p">])</span>
+    <span class="n">errpi</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="mf">100.</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">arr</span><span class="p">])</span>
+    <span class="n">pi</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mf">100.</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">arr</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">]:</span>
+        <span class="k">print</span> <span class="s">&quot;Read </span><span class="si">%d</span><span class="s"> lines from </span><span class="si">%s</span><span class="s"> &quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">flag</span><span class="p">),</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">flag</span><span class="p">,</span><span class="n">pi</span><span class="p">,(</span><span class="n">errpi</span><span class="p">)</span>
+
+
+</div>
+<div class="viewcode-block" id="read_jvas_catalog"><a class="viewcode-back" href="../modules.html#IO.read_jvas_catalog">[docs]</a><span class="k">def</span> <span class="nf">read_jvas_catalog</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span> <span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;verbose&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">False</span>
+    <span class="n">dic</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;ra&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#39;dec&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#39;z&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="s">&#39;I&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s">&#39;eI&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span> <span class="s">&#39;P&#39;</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span> <span class="s">&#39;eP&#39;</span><span class="p">:</span><span class="mi">6</span><span class="p">,</span> <span class="s">&#39;fpol&#39;</span><span class="p">:</span><span class="mi">7</span><span class="p">,</span> <span class="s">&#39;efpol&#39;</span><span class="p">:</span><span class="mi">8</span><span class="p">,</span> <span class="s">&#39;PA&#39;</span><span class="p">:</span><span class="mi">9</span><span class="p">,</span><span class="s">&#39;ePA&#39;</span><span class="p">:</span><span class="mi">10</span><span class="p">}</span>
+    <span class="n">loadfile</span> <span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">dicdata</span><span class="o">=</span><span class="p">{</span><span class="n">i</span><span class="p">:[]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">dic</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">loadfile</span><span class="p">:</span>
+    	<span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="n">dic</span><span class="p">[</span><span class="s">&#39;fpol&#39;</span><span class="p">]]</span> <span class="o">&gt;=</span><span class="mi">100</span><span class="p">:</span>
+    		<span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">]:</span>
+    		          <span class="k">print</span> <span class="s">&quot;Skipping Weird value of Pi&quot;</span><span class="p">,</span><span class="n">row</span><span class="p">[</span><span class="n">dic</span><span class="p">[</span><span class="s">&#39;fpol&#39;</span><span class="p">]]</span>
+    		<span class="k">continue</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">dic</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">dicdata</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">dic</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+    <span class="n">dicdata</span><span class="o">=</span><span class="p">{</span><span class="n">i</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dicdata</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">dic</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">]:</span>
+        <span class="k">print</span> <span class="s">&quot;Read </span><span class="si">%d</span><span class="s"> lines from </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dicdata</span><span class="p">[</span><span class="s">&#39;ra&#39;</span><span class="p">]),</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dicdata</span>
+
+
+</div>
+<div class="viewcode-block" id="read_atca_catalog"><a class="viewcode-back" href="../modules.html#IO.read_atca_catalog">[docs]</a><span class="k">def</span> <span class="nf">read_atca_catalog</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span> <span class="p">):</span>
+	<span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;verbose&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+	    <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">False</span>
+	<span class="n">f</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+	<span class="n">c</span><span class="o">=</span><span class="mi">0</span>
+	<span class="n">fields</span><span class="o">=</span><span class="p">[]</span>
+	<span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+		<span class="n">li</span><span class="o">=</span><span class="n">l</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="n">li</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;#&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">li</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;---&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">li</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;deg&#39;</span><span class="p">):</span>
+			<span class="n">cols</span><span class="o">=</span><span class="n">l</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;;&#39;</span><span class="p">)</span>
+			<span class="k">if</span>  <span class="n">c</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+				<span class="n">fields</span><span class="o">=</span> <span class="n">cols</span>
+				<span class="n">nfields</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span>
+				<span class="n">dict_catalog</span><span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span><span class="nb">xrange</span><span class="p">(</span><span class="n">nfields</span><span class="p">))}</span>
+				<span class="n">catalog</span><span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">}</span>
+			<span class="k">elif</span> <span class="n">c</span><span class="o">&gt;</span><span class="mi">2</span><span class="p">:</span>
+				<span class="n">v</span><span class="o">=</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s">&#39;;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">]</span>
+				<span class="k">if</span> <span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="n">dict_catalog</span><span class="p">[</span><span class="s">&#39;m5</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">]]</span> <span class="o">&gt;</span><span class="mi">100</span> <span class="ow">or</span> <span class="n">v</span><span class="p">[</span><span class="n">dict_catalog</span><span class="p">[</span><span class="s">&#39;m8&#39;</span><span class="p">]]</span><span class="o">&gt;</span><span class="mi">100</span>
+                            <span class="ow">or</span> <span class="n">v</span><span class="p">[</span><span class="n">dict_catalog</span><span class="p">[</span><span class="s">&#39;m20&#39;</span><span class="p">]]</span><span class="o">&gt;</span><span class="mi">100</span><span class="p">)</span> <span class="p">:</span>
+					<span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">]:</span> <span class="k">print</span> <span class="s">&quot;Skipping Weird value of Pi&quot;</span><span class="p">,</span><span class="n">v</span><span class="p">[</span><span class="n">dict_catalog</span><span class="p">[</span><span class="s">&#39;m5</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">]],</span> <span class="n">v</span><span class="p">[</span><span class="n">dict_catalog</span><span class="p">[</span><span class="s">&#39;m8&#39;</span><span class="p">]],</span> <span class="n">v</span><span class="p">[</span><span class="n">dict_catalog</span><span class="p">[</span><span class="s">&#39;m20&#39;</span><span class="p">]]</span>
+					<span class="k">continue</span>
+
+				<span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">i</span> <span class="ow">in</span> <span class="n">dict_catalog</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+					<span class="k">if</span> <span class="n">i</span><span class="o">==</span><span class="mi">0</span> <span class="ow">or</span> <span class="n">i</span><span class="o">==</span><span class="mi">9</span><span class="p">:</span>
+						<span class="n">catalog</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cols</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+					<span class="k">elif</span> <span class="n">i</span> <span class="o">==</span><span class="mi">1</span> <span class="p">:</span> <span class="c">#ra</span>
+						<span class="n">hh</span><span class="p">,</span><span class="n">mm</span><span class="p">,</span><span class="n">ss</span><span class="o">=</span> 				<span class="n">cols</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+						<span class="n">angle</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">hh</span><span class="p">)</span><span class="o">*</span><span class="mf">15.</span>  <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">mm</span><span class="p">)</span><span class="o">*</span><span class="mf">15.</span><span class="o">/</span><span class="mf">60.</span>  <span class="o">+</span><span class="nb">float</span><span class="p">(</span><span class="n">ss</span><span class="p">)</span><span class="o">*</span><span class="mf">15.</span><span class="o">/</span><span class="mi">3600</span><span class="p">)</span>
+						<span class="n">catalog</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">angle</span> <span class="p">)</span>
+					<span class="k">elif</span> <span class="n">i</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span> <span class="c">#dec</span>
+						<span class="n">dd</span><span class="p">,</span><span class="n">mm</span><span class="p">,</span><span class="n">ss</span><span class="o">=</span> <span class="n">cols</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+						<span class="n">s</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">dd</span><span class="p">))</span>
+						<span class="n">angle</span><span class="o">=</span><span class="n">s</span><span class="o">*</span><span class="p">(</span> <span class="n">s</span><span class="o">*</span><span class="nb">int</span><span class="p">(</span><span class="n">dd</span><span class="p">)</span><span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">mm</span><span class="p">)</span><span class="o">/</span><span class="mf">60.</span> <span class="o">+</span><span class="nb">float</span><span class="p">(</span><span class="n">ss</span><span class="p">)</span><span class="o">/</span><span class="mf">3600.</span><span class="p">)</span>
+						<span class="n">catalog</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">angle</span> <span class="p">)</span>
+					<span class="k">else</span><span class="p">:</span>
+						<span class="k">try</span><span class="p">:</span>
+							<span class="n">catalog</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">cols</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+						<span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+
+							<span class="n">catalog</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+			<span class="n">c</span><span class="o">+=</span><span class="mi">1</span>
+			<span class="c">#for k in catalog.keys():#if c==2000:</span>
+	<span class="n">catal</span><span class="o">=</span> <span class="p">{</span> <span class="n">k</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">catalog</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">catalog</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span> <span class="c">#break</span>
+	<span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">]:</span>
+	    <span class="k">print</span> <span class="s">&quot;Read </span><span class="si">%d</span><span class="s"> rows from the AT20G catalog&quot;</span><span class="o">%</span><span class="n">c</span>
+	<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+	<span class="k">return</span> <span class="n">catal</span><span class="p">,</span><span class="n">dict_catalog</span>
+
+</div>
+<div class="viewcode-block" id="bash_colors"><a class="viewcode-back" href="../modules.html#IO.bash_colors">[docs]</a><span class="k">class</span> <span class="nc">bash_colors</span><span class="p">:</span>
+
+    <span class="n">HEADER</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\033</span><span class="s">[95m&#39;</span>
+    <span class="n">OKBLUE</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\033</span><span class="s">[94m&#39;</span>
+    <span class="n">OKGREEN</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\033</span><span class="s">[92m&#39;</span>
+    <span class="n">WARNING</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\033</span><span class="s">[93m&#39;</span>
+    <span class="n">FAIL</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\033</span><span class="s">[91m&#39;</span>
+    <span class="n">ENDC</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\033</span><span class="s">[0m&#39;</span>
+    <span class="n">BOLD</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\033</span><span class="s">[1m&#39;</span>
+    <span class="n">UNDERLINE</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\033</span><span class="s">[4m&#39;</span>
+
+<div class="viewcode-block" id="bash_colors.header"><a class="viewcode-back" href="../modules.html#IO.bash_colors.header">[docs]</a>    <span class="k">def</span> <span class="nf">header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">string</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">HEADER</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">string</span><span class="p">)</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">ENDC</span></div>
+<div class="viewcode-block" id="bash_colors.blue"><a class="viewcode-back" href="../modules.html#IO.bash_colors.blue">[docs]</a>    <span class="k">def</span> <span class="nf">blue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">string</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">OKBLUE</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">string</span><span class="p">)</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">ENDC</span></div>
+<div class="viewcode-block" id="bash_colors.green"><a class="viewcode-back" href="../modules.html#IO.bash_colors.green">[docs]</a>    <span class="k">def</span> <span class="nf">green</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">string</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">OKGREEN</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">string</span><span class="p">)</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">ENDC</span></div>
+<div class="viewcode-block" id="bash_colors.warning"><a class="viewcode-back" href="../modules.html#IO.bash_colors.warning">[docs]</a>    <span class="k">def</span> <span class="nf">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">string</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">WARNING</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">string</span><span class="p">)</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">ENDC</span></div>
+<div class="viewcode-block" id="bash_colors.fail"><a class="viewcode-back" href="../modules.html#IO.bash_colors.fail">[docs]</a>    <span class="k">def</span> <span class="nf">fail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">string</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">FAIL</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">string</span><span class="p">)</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">ENDC</span></div>
+<div class="viewcode-block" id="bash_colors.bold"><a class="viewcode-back" href="../modules.html#IO.bash_colors.bold">[docs]</a>    <span class="k">def</span> <span class="nf">bold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">string</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">BOLD</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">string</span><span class="p">)</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">ENDC</span></div>
+<div class="viewcode-block" id="bash_colors.underline"><a class="viewcode-back" href="../modules.html#IO.bash_colors.underline">[docs]</a>    <span class="k">def</span> <span class="nf">underline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">string</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">UNDERLINE</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">string</span><span class="p">)</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">ENDC</span>
+
+
+</div></div>
+<div class="viewcode-block" id="read_IRAM_catalog"><a class="viewcode-back" href="../modules.html#IO.read_IRAM_catalog">[docs]</a><span class="k">def</span> <span class="nf">read_IRAM_catalog</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span> <span class="p">):</span>
+	<span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;verbose&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+	    <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">False</span>
+	<span class="n">f</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+	<span class="n">c</span><span class="o">=</span><span class="mi">0</span>
+	<span class="n">fields</span><span class="o">=</span><span class="p">[]</span>
+	<span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+		<span class="n">li</span><span class="o">=</span><span class="n">l</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="n">li</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;#&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">li</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;---&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">li</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;deg&#39;</span><span class="p">):</span>
+			<span class="n">cols</span><span class="o">=</span><span class="n">l</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;;&#39;</span><span class="p">)</span>
+			<span class="k">if</span>  <span class="n">c</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+				<span class="n">fields</span><span class="o">=</span> <span class="n">cols</span>
+				<span class="n">nfields</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span>
+				<span class="n">dict_catalog</span><span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span><span class="nb">xrange</span><span class="p">(</span><span class="n">nfields</span><span class="p">))}</span>
+				<span class="n">catalog</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:[]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">}</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">v</span><span class="o">=</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s">&#39;;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">]</span>
+				<span class="n">strings</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;Name&#39;</span><span class="p">,</span>  <span class="s">&#39;l_mL&#39;</span><span class="p">,</span><span class="s">&#39;l_mC&#39;</span> <span class="p">]</span>
+				<span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">i</span> <span class="ow">in</span> <span class="n">dict_catalog</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+					<span class="k">if</span> <span class="n">strings</span><span class="o">.</span><span class="n">__contains__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="p">:</span>
+						<span class="n">catalog</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cols</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+					<span class="k">else</span><span class="p">:</span>
+						<span class="n">catalog</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+			<span class="n">c</span><span class="o">+=</span><span class="mi">1</span>
+	<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">catalog</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+		<span class="n">catal</span><span class="o">=</span> <span class="p">{</span> <span class="n">k</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">catalog</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">catalog</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span> <span class="c">#break</span>
+	<span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">]:</span>
+	    <span class="k">print</span> <span class="s">&quot;Read </span><span class="si">%d</span><span class="s"> rows from the AT20G catalog&quot;</span><span class="o">%</span><span class="n">c</span>
+
+	<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+	<span class="k">return</span> <span class="n">catal</span><span class="p">,</span><span class="n">dict_catalog</span>
+</div>
+<div class="viewcode-block" id="read_VLA_catalog"><a class="viewcode-back" href="../modules.html#IO.read_VLA_catalog">[docs]</a><span class="k">def</span> <span class="nf">read_VLA_catalog</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span> <span class="p">):</span>
+	<span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;verbose&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+	    <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">False</span>
+	<span class="n">f</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+	<span class="n">c</span><span class="o">=</span><span class="mi">0</span>
+	<span class="n">fields</span><span class="o">=</span><span class="p">[]</span>
+	<span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
+		<span class="n">li</span><span class="o">=</span><span class="n">l</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="n">li</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;#&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">li</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;---&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">li</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;deg&#39;</span><span class="p">):</span>
+			<span class="n">cols</span><span class="o">=</span><span class="n">l</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;;&#39;</span><span class="p">)</span>
+			<span class="k">if</span>  <span class="n">c</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+				<span class="n">fields</span><span class="o">=</span> <span class="n">cols</span>
+				<span class="n">nfields</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span>
+				<span class="n">dict_catalog</span><span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span><span class="nb">xrange</span><span class="p">(</span><span class="n">nfields</span><span class="p">))}</span>
+				<span class="n">catalog</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:[]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">}</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">v</span><span class="o">=</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s">&#39;;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">]</span>
+				<span class="n">strings</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;AT20G&#39;</span><span class="p">,</span> <span class="s">&#39;m_AT20G&#39;</span> <span class="p">,</span> <span class="s">&#39;l_pC&#39;</span><span class="p">,</span><span class="s">&#39;l_pX&#39;</span><span class="p">,</span><span class="s">&#39;l_pK&#39;</span><span class="p">,</span><span class="s">&#39;l_pQ&#39;</span><span class="p">,</span><span class="s">&#39;Class</span><span class="se">\n</span><span class="s">&#39;</span> <span class="p">]</span>
+
+				<span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">i</span> <span class="ow">in</span> <span class="n">dict_catalog</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+					<span class="k">if</span> <span class="n">strings</span><span class="o">.</span><span class="n">__contains__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="p">:</span>
+						<span class="n">catalog</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cols</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+					<span class="k">else</span><span class="p">:</span>
+						<span class="n">catalog</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+			<span class="n">c</span><span class="o">+=</span><span class="mi">1</span>
+	<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">catalog</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span><span class="c">#if c==2000:</span>
+		<span class="n">catal</span><span class="o">=</span> <span class="p">{</span> <span class="n">k</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">catalog</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">catalog</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span> <span class="c">#break</span>
+	<span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;verbose&#39;</span><span class="p">]:</span>
+	    <span class="k">print</span> <span class="s">&quot;Read </span><span class="si">%d</span><span class="s"> rows from the AT20G catalog&quot;</span><span class="o">%</span><span class="n">c</span>
+
+	<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+	<span class="k">return</span> <span class="n">catal</span><span class="p">,</span><span class="n">dict_catalog</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">PS4C 0.0 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2017, Giuseppe Puglisi.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

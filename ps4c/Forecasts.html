@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Jupyter Notebook Tutorial &mdash; PS4C 0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="PS4C 0.0 documentation" href="index.html" />
+    <link rel="prev" title="Module contents" href="modules.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="Module contents"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PS4C 0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="jupyter-notebook-tutorial">
+<h1>Jupyter Notebook Tutorial<a class="headerlink" href="#jupyter-notebook-tutorial" title="Permalink to this headline">¶</a></h1>
+<div class="code ipython2 highlight-python"><div class="highlight"><pre>%matplotlib inline
+import pylab as pl
+import healpy as hp
+import numpy as np
+import h5py as h5
+from PS4Cast  import *
+import astropy
+from astropy import units as u,  constants as C
+</pre></div>
+</div>
+<div class="code ipython2 highlight-python"><div class="highlight"><pre><span class="n">dir_ps</span><span class="o">=</span><span class="s">&#39;path/to/PS4C/&#39;</span>
+<span class="n">lens</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">hp</span><span class="o">.</span><span class="n">read_cl</span><span class="p">(</span><span class="n">dir_ps</span><span class="o">+</span><span class="s">&#39;data/lensedCls.fits&#39;</span><span class="p">))</span>
+<span class="n">l</span><span class="o">=</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lens</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])))</span>
+<span class="n">tens</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">hp</span><span class="o">.</span><span class="n">read_cl</span><span class="p">(</span><span class="n">dir_ps</span><span class="o">+</span><span class="s">&#39;data/r_0.05_tensCls.fits&#39;</span><span class="p">))</span>
+<span class="n">cltot</span><span class="o">=</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">k</span>  <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">k</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lens</span><span class="p">,</span><span class="n">tens</span><span class="p">)]</span>
+<span class="n">cbb_80</span><span class="o">=</span><span class="n">cltot</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">80</span><span class="p">]</span>
+<span class="n">cbb_1000</span><span class="o">=</span><span class="n">cltot</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">1000</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="section" id="current-ground-based">
+<h2>Current Ground Based<a class="headerlink" href="#current-ground-based" title="Permalink to this headline">¶</a></h2>
+<div class="code ipython2 highlight-python"><div class="highlight"><pre><span class="n">nu</span><span class="o">=</span><span class="p">[</span><span class="mi">95</span><span class="p">,</span><span class="mi">150</span><span class="p">]</span>
+<span class="n">sens</span><span class="o">=</span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.1</span><span class="p">]</span>
+<span class="n">fwhm</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mf">3.5</span><span class="p">]</span>
+<span class="n">fsky</span><span class="o">=.</span><span class="mo">05</span>
+
+<span class="n">s2</span><span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="n">ID</span><span class="o">=</span><span class="s">&#39;CMB-S2&#39;</span><span class="p">,</span> <span class="n">sensitivity</span><span class="o">=</span> <span class="n">sens</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="n">nu</span> <span class="p">,</span> <span class="n">fwhm</span><span class="o">=</span><span class="n">fwhm</span> <span class="p">,</span> <span class="n">fsky</span><span class="o">=</span><span class="n">fsky</span><span class="p">,</span><span class="n">nchannels</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="n">units_sensitivity</span><span class="o">=</span><span class="s">&#39;Jy&#39;</span><span class="p">,</span><span class="n">units_beam</span><span class="o">=</span><span class="s">&#39;arcmin&#39;</span><span class="p">)</span>
+<span class="n">forecasts2</span><span class="o">=</span><span class="n">Forecaster</span><span class="p">(</span><span class="n">pb</span><span class="p">,</span>  <span class="n">ps4c_dir</span><span class="o">=</span><span class="n">dir_ps</span><span class="p">,</span> <span class="n">sigmadetection</span><span class="o">=</span><span class="mf">3.</span> <span class="p">)</span>
+<span class="n">forecasts2</span><span class="o">.</span><span class="n">forecast_pi2scaling</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">forecasts2</span><span class="p">()</span>
+<span class="n">forecast2</span><span class="o">.</span><span class="n">plot_powerspectra</span><span class="p">(</span><span class="n">spectra_to_plot</span><span class="o">=</span><span class="s">&#39;Bonly&#39;</span><span class="p">,</span><span class="n">FG</span><span class="o">=</span><span class="s">&#39;total&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">[</span><span class="mi">50</span><span class="p">,</span><span class="mi">2000</span><span class="p">],</span> <span class="n">ylim</span><span class="o">=</span><span class="p">[</span><span class="mf">1e-3</span><span class="p">,</span><span class="mf">1e1</span><span class="p">],</span> <span class="n">savefig</span><span class="o">=</span><span class="s">&#39;../pspaper/cmbs2_Bmodes.pdf&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/output_4_2.png" src="_images/output_4_2.png" />
+</div>
+<div class="section" id="litebird">
+<h2>LiteBIRD<a class="headerlink" href="#litebird" title="Permalink to this headline">¶</a></h2>
+<div class="code ipython2 highlight-python"><div class="highlight"><pre><span class="n">freqs</span><span class="o">=</span><span class="p">[</span><span class="mi">40</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">60</span><span class="p">,</span> <span class="mi">68</span><span class="p">,</span> <span class="mi">78</span><span class="p">,</span><span class="mi">89</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span><span class="mi">119</span><span class="p">,</span> <span class="mi">140</span><span class="p">,</span><span class="mi">166</span><span class="p">]</span>
+<span class="n">netarr</span><span class="o">=</span><span class="p">[</span><span class="mf">53.4</span><span class="p">,</span><span class="mf">32.3</span><span class="p">,</span><span class="mf">25.1</span><span class="p">,</span><span class="mf">19.6</span><span class="p">,</span><span class="mf">15.3</span><span class="p">,</span><span class="mf">12.4</span><span class="p">,</span><span class="mf">15.6</span><span class="p">,</span><span class="mf">12.6</span><span class="p">,</span><span class="mf">8.3</span><span class="p">,</span><span class="mf">8.7</span><span class="p">]</span>
+<span class="n">fwhms</span><span class="o">=</span> <span class="p">[(</span><span class="n">C</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cgs</span><span class="o">/</span><span class="p">(</span><span class="n">f</span><span class="o">*</span><span class="mf">1e9</span><span class="o">/</span>  <span class="n">u</span><span class="o">.</span><span class="n">s</span> <span class="p">)</span> <span class="o">/</span><span class="p">(</span><span class="mf">50.</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="p">)</span><span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">rad</span> <span class="p">)</span> <span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">arcmin</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>  <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">freqs</span><span class="p">]</span>
+<span class="n">fsky</span><span class="o">=.</span><span class="mi">73</span>
+<span class="n">litebird</span><span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="n">ID</span><span class="o">=</span><span class="s">&#39;LiteBIRD&#39;</span><span class="p">,</span> <span class="n">sensitivity</span><span class="o">=</span><span class="n">netarr</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="n">freqs</span> <span class="p">,</span><span class="n">nchannels</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">freqs</span><span class="p">),</span> <span class="n">fwhm</span><span class="o">=</span><span class="n">fwhms</span> <span class="p">,</span> <span class="n">fsky</span><span class="o">=</span><span class="n">fsky</span><span class="p">,</span>
+                <span class="n">units_sensitivity</span><span class="o">=</span><span class="s">&#39;uKarcmin&#39;</span><span class="p">,</span><span class="n">units_beam</span><span class="o">=</span><span class="s">&#39;arcmin&#39;</span><span class="p">)</span>
+<span class="n">forecastlitebird</span><span class="o">=</span><span class="n">Forecaster</span><span class="p">(</span><span class="n">litebird</span><span class="p">,</span><span class="n">sigmadetection</span><span class="o">=</span><span class="mf">3.</span><span class="p">,</span> <span class="n">ps4c_dir</span><span class="o">=</span><span class="n">dir_ps</span><span class="p">)</span>
+<span class="n">forecastlitebird</span><span class="o">.</span><span class="n">forecast_pi2scaling</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="n">forecastlitebird</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s">&#39;c2ex&#39;</span><span class="p">)</span>
+<span class="n">forecastlitebird</span><span class="o">.</span><span class="n">print_info</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="code highlight-python"><div class="highlight"><pre>=========================================================================================
+LiteBIRD    Specifics
+
+Frequency   ...... [  40.   50.   60.   68.   78.   89.  100.  119.  140.  166.] GHz
+Flux limit  ...... [ 0.14589884  0.08824967  0.06857792  0.10710177  0.08360495  0.06775826
+  0.08524426  0.06885114  0.09070864  0.09508014] Jy
+Resolution  ...... [ 51.53052772  41.22442218  34.35368515  30.31207513  26.42591165
+  23.15978774  20.61221109  17.32118579  14.72300792  12.41699463] arcmin
+# channels  ...... 10
+Fraction of sky     ...... 0.73
+Beam angle  ...... [  2.54592634e-04   1.62939286e-04   1.13152282e-04   8.80943371e-05
+   6.69540130e-05   5.14263622e-05   4.07348215e-05   2.87654978e-05
+   2.07830722e-05   1.47825597e-05] sr
+//////////////////////////////////////////////////////////////////////////////////////////
+Forecasted quantities
+
+Frequency   #sources[S,P]    Confusion       &lt;Pi&gt;    &lt;Pi^2&gt;x1e3     D^TT(lensing)   D^BB(lensing)
+
+40.0 GHz    496     3       171.958mJy      4.26    2.17     15208.7 uK2      16.4795 uK2
+50.0 GHz    913     9       98.5265mJy      4.28    2.25     3988.99 uK2      4.48189 uK2
+60.0 GHz    957     6       46.2629mJy      4.30    2.33     1249.09 uK2      1.45431 uK2
+68.0 GHz    571     3       33.8506mJy      4.31    2.39     1233.54 uK2      1.47706 uK2
+78.0 GHz    763     4       24.0354mJy      4.33    2.48     602.159 uK2      0.746345 uK2
+89.0 GHz    882     8       15.3532mJy      4.35    2.57     287.989 uK2      0.370506 uK2
+100.0 GHz   679     7       11.4785mJy      4.37    2.67     250.716 uK2      0.334577 uK2
+119.0 GHz   866     10      7.43595mJy      4.41    2.84     124.197 uK2      0.176284 uK2
+140.0 GHz   488     4       2.05056mJy      4.45    3.03     84.9906 uK2      0.128869 uK2
+166.0 GHz   462     4       1.47748mJy      4.50    3.28     65.0669 uK2      0.106753 uK2
+==========================================================================================
+</pre></div>
+</div>
+<div class="code ipython2 highlight-python"><div class="highlight"><pre><span class="n">forecastlitebird</span><span class="o">.</span><span class="n">plot_powerspectra</span><span class="p">(</span><span class="n">spectra_to_plot</span><span class="o">=</span><span class="s">&#39;Bonly&#39;</span><span class="p">,</span> <span class="n">FG</span><span class="o">=</span><span class="s">&#39;total&#39;</span><span class="p">,</span>
+                                   <span class="n">savefig</span><span class="o">=</span><span class="s">&#39;litebird_Bmodes.pdf&#39;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1000</span><span class="p">],</span><span class="n">ylim</span><span class="o">=</span><span class="p">[</span><span class="mf">1e-5</span><span class="p">,</span><span class="mf">1e2</span><span class="p">])</span>
+</pre></div>
+</div>
+<img alt="_images/output_7_1.png" src="_images/output_7_1.png" />
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Jupyter Notebook Tutorial</a><ul>
+<li><a class="reference internal" href="#current-ground-based">Current Ground Based</a></li>
+<li><a class="reference internal" href="#litebird">LiteBIRD</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="modules.html"
+                        title="previous chapter">Module contents</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/Forecasts.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="Module contents"
+             >previous</a> |</li>
+        <li><a href="index.html">PS4C 0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2017, Giuseppe Puglisi.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>
