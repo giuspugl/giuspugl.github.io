@@ -1,0 +1,296 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>picasso.inpainters.interfaces &mdash; PICASSO 0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> PICASSO
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../Inpainters.html">Inpainters Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../utils.html">Utils contents</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PICASSO</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>picasso.inpainters.interfaces</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for picasso.inpainters.interfaces</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#   date: 2019-08-20</span>
+<span class="c1">#   author: GIUSEPPE PUGLISI</span>
+<span class="c1">#   python3.6</span>
+<span class="c1">#   Copyright (C) 2019   Giuseppe Puglisi    gpuglisi@stanford.edu</span>
+<span class="c1">#</span>
+
+
+
+<span class="c1">#import .deep_prior_inpainter as dp</span>
+<span class="c1">#import .contextual_attention_gan as ca</span>
+<span class="c1">#import .nearest_neighbours_inpainter as nn</span>
+
+<span class="kn">from</span> <span class="nn">inpainters</span> <span class="k">import</span> <span class="p">(</span>
+  <span class="n">deep_prior_inpainter</span> <span class="k">as</span> <span class="n">dp</span> <span class="p">,</span>
+  <span class="n">contextual_attention_gan</span>    <span class="k">as</span> <span class="n">ca</span><span class="p">,</span>
+  <span class="n">nearest_neighbours_inpainter</span> <span class="k">as</span> <span class="n">nn</span>
+  <span class="p">)</span>
+
+
+<div class="viewcode-block" id="HoleInpainter"><a class="viewcode-back" href="../../../Inpainters.html#picasso.inpainters.interfaces.HoleInpainter">[docs]</a><span class="k">class</span> <span class="nc">HoleInpainter</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span> <span class="p">:</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class provides an interface to the 3 inpainting techniques.</span>
+<span class="sd">    One of the key parameters is `args`  importing arguments  input by  the user in the inpainting scripts.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span> <span class="p">,</span> <span class="n">Npix</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span> <span class="n">meshgrid</span><span class="o">=</span><span class="kc">True</span> <span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize inpainter with the method given in ``args.method``.</span>
+<span class="sd">        So far the Deep-Prior and GAN architecture are compatible to run on  ``128x128`` images.</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span><span class="s1">&#39;Deep-Prior&#39;</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">Inpainter</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">DeepPrior</span> <span class="p">(</span> <span class="p">(</span><span class="n">Npix</span><span class="p">,</span> <span class="n">Npix</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+                                            <span class="n">verbose</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">debug</span><span class="p">,</span> <span class="n">meshgrid</span><span class="o">=</span><span class="n">meshgrid</span>   <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">dp_epochs</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">=</span><span class="s2">&quot;Adam&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Inpainter</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">method</span><span class="o">==</span><span class="s1">&#39;Contextual-Attention&#39;</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Inpainter</span> <span class="o">=</span> <span class="n">ca</span><span class="o">.</span><span class="n">ContextualAttention</span><span class="p">(</span> <span class="n">modeldir</span> <span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">checkpoint_dir</span>
+                        <span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">debug</span>  <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">method</span><span class="o">==</span><span class="s1">&#39;Nearest-Neighbours&#39;</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Inpainter</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">NearestNeighbours</span><span class="p">(</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">debug</span><span class="p">,</span> <span class="n">Npix</span><span class="o">=</span><span class="n">Npix</span><span class="p">,</span> <span class="n">tol</span> <span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">nn_tol</span>  <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">method</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reuse</span> <span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run inpainting,</span>
+
+<span class="sd">        **Parameters**</span>
+
+<span class="sd">        - `reuse`:{bool}</span>
+<span class="sd">            whether to recompile or not the Deep-Prior and GAN  neural network.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">==</span> <span class="s1">&#39;Deep-Prior&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">DPinpaint</span><span class="p">(</span><span class="n">reuse</span><span class="o">=</span><span class="n">reuse</span> <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">==</span> <span class="s1">&#39;Contextual-Attention&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">GANinpaint</span><span class="p">(</span><span class="n">reuse</span><span class="o">=</span><span class="n">reuse</span> <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">==</span> <span class="s1">&#39;Nearest-Neighbours&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">NNinpaint</span><span class="p">()</span>
+
+<div class="viewcode-block" id="HoleInpainter.setup_input"><a class="viewcode-back" href="../../../Inpainters.html#picasso.inpainters.interfaces.HoleInpainter.setup_input">[docs]</a>    <span class="k">def</span> <span class="nf">setup_input</span><span class="p">(</span><span class="bp">self</span> <span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">rdseed</span><span class="o">=</span><span class="kc">None</span>  <span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Pre-process the  flat map  by renormalizing and reshaping  it</span>
+<span class="sd">        as it required by the inpainting method</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Inpainter</span><span class="o">.</span><span class="n">rdseed</span> <span class="o">=</span> <span class="n">rdseed</span>
+        <span class="k">return</span>   <span class="bp">self</span><span class="o">.</span><span class="n">Inpainter</span><span class="o">.</span><span class="n">setup_input</span><span class="p">(</span> <span class="n">fname</span> <span class="p">)</span></div>
+
+<div class="viewcode-block" id="HoleInpainter.DPinpaint"><a class="viewcode-back" href="../../../Inpainters.html#picasso.inpainters.interfaces.HoleInpainter.DPinpaint">[docs]</a>    <span class="k">def</span> <span class="nf">DPinpaint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">reuse</span> <span class="p">)</span> <span class="p">:</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set of instructions to inpaint with :class:`DeepPrior`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">reuse</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Inpainter</span><span class="o">.</span><span class="n">compile</span> <span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Inpainter</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Inpainter</span><span class="o">.</span><span class="n">Z</span> <span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Inpainter</span><span class="o">.</span><span class="n">X</span> <span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Inpainter</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Inpainter</span><span class="o">.</span><span class="n">Z</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">Inpainter</span><span class="o">.</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">p</span> <span class="o">=</span>   <span class="bp">self</span><span class="o">.</span><span class="n">Inpainter</span><span class="o">.</span><span class="n">predict</span><span class="p">()[</span><span class="mi">0</span><span class="p">,:,:,</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Inpainter</span><span class="o">.</span><span class="n">rescale_back</span><span class="p">(</span><span class="n">p</span> <span class="p">)</span>
+        <span class="k">return</span> <span class="n">p</span></div>
+
+<div class="viewcode-block" id="HoleInpainter.GANinpaint"><a class="viewcode-back" href="../../../Inpainters.html#picasso.inpainters.interfaces.HoleInpainter.GANinpaint">[docs]</a>    <span class="k">def</span> <span class="nf">GANinpaint</span>  <span class="p">(</span><span class="bp">self</span> <span class="p">,</span> <span class="n">reuse</span>  <span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set of instructions to inpaint with</span>
+<span class="sd">        :class:`ContextualAttention`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Inpainter</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span> <span class="n">reuse</span> <span class="p">)</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Inpainter</span><span class="o">.</span><span class="n">rescale_back</span><span class="p">(</span><span class="n">p</span> <span class="p">)</span>
+
+        <span class="k">return</span>  <span class="n">p</span></div>
+
+<div class="viewcode-block" id="HoleInpainter.NNinpaint"><a class="viewcode-back" href="../../../Inpainters.html#picasso.inpainters.interfaces.HoleInpainter.NNinpaint">[docs]</a>    <span class="k">def</span> <span class="nf">NNinpaint</span>  <span class="p">(</span><span class="bp">self</span>  <span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set of instructions to inpaint with :class:`NearestNeighbours`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span>  <span class="bp">self</span><span class="o">.</span><span class="n">Inpainter</span><span class="o">.</span><span class="n">predict</span> <span class="p">(</span> <span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Giuseppe Puglisi, Xiran Bai, Yuuki Omori
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
