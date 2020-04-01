@@ -1,0 +1,390 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Utils contents &mdash; PICASSO 0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Inpainters Module" href="Inpainters.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> PICASSO
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Inpainters.html">Inpainters Module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Utils contents</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-picasso.utils.minkowskifunctionals">Minkowski Functionals Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-picasso.utils.utils">Utilities Module</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PICASSO</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Utils contents</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/utils.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="utils-contents">
+<h1>Utils contents<a class="headerlink" href="#utils-contents" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-picasso.utils.minkowskifunctionals">
+<span id="minkowski-functionals-module"></span><h2>Minkowski Functionals Module<a class="headerlink" href="#module-picasso.utils.minkowskifunctionals" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="picasso.utils.minkowskifunctionals.estimate_marchingsquare">
+<code class="sig-prename descclassname">picasso.utils.minkowskifunctionals.</code><code class="sig-name descname">estimate_marchingsquare</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">threshold</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/picasso/utils/minkowskifunctionals.html#estimate_marchingsquare"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#picasso.utils.minkowskifunctionals.estimate_marchingsquare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate Minkowski functionals (<span class="math notranslate nohighlight">\(V_0, V_1, V_2\)</span>) at a given
+threshold on an image with the technique of  <cite>Marching Squares</cite>, described in Mantz et al 2008.</p>
+<p><strong>Parameters</strong></p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">data</span></code><span class="classifier">{array}</span></dt><dd><p>2D image (rescaled to <span class="math notranslate nohighlight">\([-1,1]\)</span> )</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">threshold</span></code>: {float}</dt><dd><p>threshold value to estimate Minkowski functionals</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p><strong>Returns</strong></p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">f</span></code>: {float}</dt><dd><p>the value of <span class="math notranslate nohighlight">\(V_0\)</span></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">u</span></code>:{float}</dt><dd><p>the value of <span class="math notranslate nohighlight">\(V_1\)</span></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">chi</span></code>:{float}</dt><dd><p>the value of <span class="math notranslate nohighlight">\(V_2\)</span></p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="picasso.utils.minkowskifunctionals.get_functionals">
+<code class="sig-prename descclassname">picasso.utils.minkowskifunctionals.</code><code class="sig-name descname">get_functionals</code><span class="sig-paren">(</span><em class="sig-param">im</em>, <em class="sig-param">nevals=32</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/picasso/utils/minkowskifunctionals.html#get_functionals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#picasso.utils.minkowskifunctionals.get_functionals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate Minkowski functionals (<span class="math notranslate nohighlight">\(V_0, V_1, V_2\)</span>) on a set of thresholds.</p>
+<p><strong>Parameters</strong></p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">data</span></code><span class="classifier">{array}</span></dt><dd><p>2D image (rescaled to [-1,1] )</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">nevals</span></code>: {int}</dt><dd><p>number of thresholds where to evaluate minkowski</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p><strong>Returns</strong></p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">x</span></code>: {array}</dt><dd><p>array of thresholds</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">f</span></code> :{array}</dt><dd><p>the value of <span class="math notranslate nohighlight">\(V_0( x )\)</span></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">u</span></code>:{array}</dt><dd><p>the value of <span class="math notranslate nohighlight">\(V_1(x)\)</span></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">chi</span></code>:{array}</dt><dd><p>the value of <span class="math notranslate nohighlight">\(V_2(x)\)</span></p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+</div>
+<div class="section" id="module-picasso.utils.utils">
+<span id="utilities-module"></span><h2>Utilities Module<a class="headerlink" href="#module-picasso.utils.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="picasso.utils.utils.MinMaxRescale">
+<code class="sig-prename descclassname">picasso.utils.utils.</code><code class="sig-name descname">MinMaxRescale</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">a=0</em>, <em class="sig-param">b=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/picasso/utils/utils.html#MinMaxRescale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#picasso.utils.utils.MinMaxRescale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs  a MinMax Rescaling on an array <cite>x</cite> to a generic range <span class="math notranslate nohighlight">\([a,b]\)</span>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="picasso.utils.utils.StandardizeFeatures">
+<code class="sig-prename descclassname">picasso.utils.utils.</code><code class="sig-name descname">StandardizeFeatures</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/picasso/utils/utils.html#StandardizeFeatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#picasso.utils.utils.StandardizeFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standardizes  an array <cite>x</cite> to have average <code class="docutils literal notranslate"><span class="pre">0</span></code>, and std. deviation <code class="docutils literal notranslate"><span class="pre">1</span></code> .</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="picasso.utils.utils.f2h">
+<code class="sig-prename descclassname">picasso.utils.utils.</code><code class="sig-name descname">f2h</code><span class="sig-paren">(</span><em class="sig-param">flat</em>, <em class="sig-param">target_header</em>, <em class="sig-param">nside</em>, <em class="sig-param">coord_in='C'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/picasso/utils/utils.html#f2h"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#picasso.utils.utils.f2h" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a  HEALPIX map projected  and the footprint of a flat one , given a WCS header,
+using <code class="xref py py-mod docutils literal notranslate"><span class="pre">reproject</span></code> package</p>
+<p><strong>Parameters</strong></p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">flat</span></code><span class="classifier">{2D array}</span></dt><dd><p>flat  map</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">target_header</span></code>:</dt><dd><p>header defined from <a class="reference internal" href="#picasso.utils.utils.set_header" title="picasso.utils.utils.set_header"><code class="xref py py-func docutils literal notranslate"><span class="pre">set_header()</span></code></a></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">nside</span></code>:{int}</dt><dd><p>nside of output healpix map</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="picasso.utils.utils.h2f">
+<code class="sig-prename descclassname">picasso.utils.utils.</code><code class="sig-name descname">h2f</code><span class="sig-paren">(</span><em class="sig-param">hmap</em>, <em class="sig-param">target_header</em>, <em class="sig-param">coord_in='C'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/picasso/utils/utils.html#h2f"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#picasso.utils.utils.h2f" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a target square submap from a projected  HEALPIX map, given a WCS header,
+using <code class="xref py py-mod docutils literal notranslate"><span class="pre">reproject</span></code> package</p>
+<p><strong>Parameters</strong></p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">hmap</span></code><span class="classifier">{array}</span></dt><dd><p>healpix map</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">target_header</span></code>:</dt><dd><p>header defined from <a class="reference internal" href="#picasso.utils.utils.set_header" title="picasso.utils.utils.set_header"><code class="xref py py-func docutils literal notranslate"><span class="pre">set_header()</span></code></a></p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="picasso.utils.utils.rd2tp">
+<code class="sig-prename descclassname">picasso.utils.utils.</code><code class="sig-name descname">rd2tp</code><span class="sig-paren">(</span><em class="sig-param">ra</em>, <em class="sig-param">dec</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/picasso/utils/utils.html#rd2tp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#picasso.utils.utils.rd2tp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert <code class="docutils literal notranslate"><span class="pre">ra,dec</span> <span class="pre">-&gt;</span> <span class="pre">theta,phi</span></code></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="picasso.utils.utils.return_intersection">
+<code class="sig-prename descclassname">picasso.utils.utils.</code><code class="sig-name descname">return_intersection</code><span class="sig-paren">(</span><em class="sig-param">hist_test</em>, <em class="sig-param">hist_true</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/picasso/utils/utils.html#return_intersection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#picasso.utils.utils.return_intersection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate the intersection between two histograms.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="picasso.utils.utils.set_header">
+<code class="sig-prename descclassname">picasso.utils.utils.</code><code class="sig-name descname">set_header</code><span class="sig-paren">(</span><em class="sig-param">ra</em>, <em class="sig-param">dec</em>, <em class="sig-param">pixelsize</em>, <em class="sig-param">Npix=128</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/picasso/utils/utils.html#set_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#picasso.utils.utils.set_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the WCS header needed to perform the projection with <a class="reference internal" href="#picasso.utils.utils.h2f" title="picasso.utils.utils.h2f"><code class="xref py py-func docutils literal notranslate"><span class="pre">h2f()</span></code></a> and <a class="reference internal" href="#picasso.utils.utils.f2h" title="picasso.utils.utils.f2h"><code class="xref py py-func docutils literal notranslate"><span class="pre">f2h()</span></code></a>.</p>
+<p><strong>Parameters</strong></p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">ra,dec</span></code><span class="classifier">{float}</span></dt><dd><p>coordinates of the center of the patch</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">pixelsize</span></code>:{float}</dt><dd><p>the size of the pixels of the reprojected flat map  in units of <code class="docutils literal notranslate"><span class="pre">deg/pixel</span></code></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">Npix</span></code>:{int}</dt><dd><p>number of pixels in one side of the flat map</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="picasso.utils.utils.tp2rd">
+<code class="sig-prename descclassname">picasso.utils.utils.</code><code class="sig-name descname">tp2rd</code><span class="sig-paren">(</span><em class="sig-param">tht</em>, <em class="sig-param">phi</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/picasso/utils/utils.html#tp2rd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#picasso.utils.utils.tp2rd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert <code class="docutils literal notranslate"><span class="pre">theta,phi</span> <span class="pre">-&gt;</span> <span class="pre">ra,dec</span></code></p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="Inpainters.html" class="btn btn-neutral float-left" title="Inpainters Module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Giuseppe Puglisi, Xiran Bai, Yuuki Omori
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

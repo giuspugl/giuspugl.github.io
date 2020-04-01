@@ -1,0 +1,267 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>PICASSO &mdash; PICASSO 0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Inpainters Module" href="Inpainters.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="#" class="icon icon-home"> PICASSO
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="Inpainters.html">Inpainters Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils contents</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">PICASSO</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>PICASSO</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="picasso">
+<h1>PICASSO<a class="headerlink" href="#picasso" title="Permalink to this headline">¶</a></h1>
+<a class="reference internal image-reference" href="_images/m51_avignon.jpg"><img alt="_images/m51_avignon.jpg" src="_images/m51_avignon.jpg" style="width: 419.29999999999995px; height: 291.2px;" /></a>
+<p><em>Image of the</em>  <a class="reference external" href="https://en.wikipedia.org/wiki/Whirlpool_Galaxy">Whirlpool Galaxy</a>  <em>(M51) rendered from the stylistics elements of</em> <a class="reference external" href="https://en.wikipedia.org/wiki/Les_Demoiselles_d%27Avignon">Les Demoiselles d’Avignon</a> <em>(Pablo Picasso, 1907) with</em> <a class="reference external" href="DeepArt.io">DeepArt.io</a>.</p>
+<div class="section" id="python-inpainter-for-cosmological-and-astrophysical-sources">
+<h2>Python Inpainter for Cosmological and AStrophysical SOurces<a class="headerlink" href="#python-inpainter-for-cosmological-and-astrophysical-sources" title="Permalink to this headline">¶</a></h2>
+<p>This package  provides a suite of inpainting methodologies aimed at
+reconstructing holes on images  (128x128 pixels) extracted from a HEALPIX map.</p>
+<p>Three inpainting techniques are included in <code class="docutils literal notranslate"><span class="pre">PICASSO</span></code> and can be divided into two main groups:</p>
+<ol class="arabic simple">
+<li><p>diffusive-based methods (Nearest-Neighbours)</p></li>
+<li><p>learning-based methods that rely on training DCNNs to fill the missing pixels with the predictions  learned from a training data-set (Deep-Prior and Generative Adversarial Networks, GAN ).</p></li>
+</ol>
+<p>For further details see <a class="reference external" href="http://arxiv.org/abs/2003.13691">Puglisi et al. (2020)</a>.</p>
+<p>So far,  <code class="docutils literal notranslate"><span class="pre">PICASSO</span></code> has been tested on  inpainting maps of   two   polarized emissions in the microwave regime: Synchrotron and Thermal Dust. GAN weights have been derived by training on  images of each emission and  can be found at : <a class="reference external" href="https://drive.google.com/drive/folders/1NtJ-amLBXNjbvurMtbgptPdYmpp97do7">GAN weights</a>.</p>
+<div class="section" id="install">
+<h3>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/giuspugl/picasso
+<span class="nb">cd</span> picasso
+python setup.py install
+</pre></div>
+</div>
+</div>
+<div class="section" id="usage">
+<h3>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h3>
+<p>Scripts are provided to the user in order to perform:</p>
+<ul class="simple">
+<li><p>projection from full sky HEALPIX maps to flat thumbnails images <a class="reference external" href="https://github.com/giuspugl/picasso/blob/master/picasso/image_stacker_mpi.py">image_stacker</a></p></li>
+<li><p>inpainting on GPUs <a class="reference external" href="https://github.com/giuspugl/picasso/blob/master/picasso/inpaint_gpu.py">inpaint_gpu</a></p></li>
+<li><p>parallel inpainting on multiple processes (with <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> ) <a class="reference external" href="https://github.com/giuspugl/picasso/blob/master/picasso/inpaint_mpi.py">inpaint_mpi</a></p></li>
+<li><p>projection from flat images to HEALPIX  <a class="reference external" href="https://github.com/giuspugl/picasso/blob/master/picasso/inpaint_gpu.py">inpaint_gpu</a></p></li>
+</ul>
+<a class="reference internal image-reference" href="_images/imagecrop.png"><img alt="_images/imagecrop.png" src="_images/imagecrop.png" style="width: 538.8px; height: 148.2px;" /></a>
+<p><em>An example of a crop images (leftmost panel) inpainted with the three methods in</em> <code class="docutils literal notranslate"><span class="pre">PICASSO</span></code>.</p>
+</div>
+<div class="section" id="support">
+<h3>Support<a class="headerlink" href="#support" title="Permalink to this headline">¶</a></h3>
+<p>If you encounter any difficulty in installing and using the code or you think
+you found a bug, please <a class="reference external" href="https://github.com/giuspugl/picasso/issues">open an issue</a>.</p>
+</div>
+<div class="section" id="contents">
+<h3>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h3>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Inpainters.html">Inpainters Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Inpainters.html#module-picasso.inpainters.interfaces">Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Inpainters.html#module-picasso.inpainters.deep_prior_inpainter">Deep Prior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Inpainters.html#module-picasso.inpainters.nearest_neighbours_inpainter">Nearest Neighbours</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Inpainters.html#module-picasso.inpainters.contextual_attention_gan">GAN</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils contents</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#module-picasso.utils.minkowskifunctionals">Minkowski Functionals Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#module-picasso.utils.utils">Utilities Module</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Inpainters.html" class="btn btn-neutral float-right" title="Inpainters Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Giuseppe Puglisi, Xiran Bai, Yuuki Omori
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

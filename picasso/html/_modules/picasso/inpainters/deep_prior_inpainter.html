@@ -1,0 +1,436 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>picasso.inpainters.deep_prior_inpainter &mdash; PICASSO 0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> PICASSO
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../Inpainters.html">Inpainters Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../utils.html">Utils contents</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PICASSO</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>picasso.inpainters.deep_prior_inpainter</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for picasso.inpainters.deep_prior_inpainter</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#   date: 2019-08-20</span>
+<span class="c1">#   author: GIUSEPPE PUGLISI</span>
+<span class="c1">#   python3.6</span>
+<span class="c1">#   Copyright (C) 2019   Giuseppe Puglisi    gpuglisi@stanford.edu</span>
+<span class="c1">#</span>
+
+
+
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">from</span> <span class="nn">keras</span> <span class="k">import</span> <span class="n">layers</span>
+
+<span class="kn">import</span> <span class="nn">keras.backend</span> <span class="k">as</span> <span class="nn">K</span>
+<span class="kn">from</span> <span class="nn">keras.layers</span> <span class="k">import</span> <span class="p">(</span>
+        <span class="n">Input</span><span class="p">,</span><span class="n">Conv2D</span><span class="p">,</span><span class="n">UpSampling2D</span><span class="p">,</span>
+        <span class="n">Dense</span> <span class="p">,</span><span class="n">Flatten</span><span class="p">,</span><span class="n">Reshape</span><span class="p">,</span> <span class="n">ZeroPadding2D</span> <span class="p">,</span>
+        <span class="n">LeakyReLU</span><span class="p">,</span><span class="n">Masking</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">keras.models</span> <span class="k">import</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">keras.initializers</span> <span class="k">import</span> <span class="n">glorot_uniform</span>
+<span class="kn">from</span> <span class="nn">keras.optimizers</span> <span class="k">import</span> <span class="n">RMSprop</span><span class="p">,</span> <span class="n">Adam</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<span class="kn">from</span> <span class="nn">utils</span> <span class="k">import</span> <span class="n">MinMaxRescale</span>
+
+<div class="viewcode-block" id="DeepPrior"><a class="viewcode-back" href="../../../Inpainters.html#picasso.inpainters.deep_prior_inpainter.DeepPrior">[docs]</a><span class="k">class</span>   <span class="nc">DeepPrior</span> <span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Inpainting class interface for Deep-Prior</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DeepPrior.upsampling_block"><a class="viewcode-back" href="../../../Inpainters.html#picasso.inpainters.deep_prior_inpainter.DeepPrior.upsampling_block">[docs]</a>    <span class="k">def</span> <span class="nf">upsampling_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">filters</span><span class="p">,</span> <span class="n">stage</span><span class="p">,</span> <span class="n">block</span> <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Implementation of the up-sampling  block</span>
+
+<span class="sd">        **Parameters**</span>
+
+<span class="sd">        - ``X``:</span>
+<span class="sd">            input tensor of shape ``(m, n_H_prev, n_W_prev, n_C_prev)``</span>
+
+<span class="sd">        - ``f``: {int}</span>
+<span class="sd">            specifying the shape of the middle CONV&#39;s window for the main path</span>
+<span class="sd">        - ``filters`` :{int}</span>
+<span class="sd">            defining the number of filters in the CONV layers of the main path</span>
+<span class="sd">        - ``stage`` :{int}</span>
+<span class="sd">            used to name the layers, depending on their position in the network</span>
+<span class="sd">        - ``block``: {string}</span>
+<span class="sd">            used to name the layers, depending on their position in the network</span>
+
+
+<span class="sd">        **Returns**</span>
+
+<span class="sd">        - ``X``:</span>
+<span class="sd">            output of the convolutional block, tensor of shape ``(n_H, n_W, n_C)``</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">conv_id</span> <span class="o">=</span>   <span class="n">block</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">Conv2D</span><span class="p">(</span> <span class="n">filters</span>  <span class="p">,</span>  <span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="n">f</span><span class="p">)</span>  <span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">,</span>
+               <span class="n">kernel_initializer</span> <span class="o">=</span> <span class="n">glorot_uniform</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;conv1_&#39;</span><span class="o">+</span><span class="n">conv_id</span><span class="p">)(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X</span><span class="o">=</span><span class="n">LeakyReLU</span><span class="p">(</span><span class="n">alpha</span><span class="o">=.</span><span class="mi">1</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;LeakyReLU1_&#39;</span><span class="o">+</span><span class="n">conv_id</span><span class="p">)(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">Conv2D</span><span class="p">(</span> <span class="n">filters</span>  <span class="p">,</span>  <span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="n">f</span><span class="p">)</span>  <span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">,</span>
+               <span class="n">kernel_initializer</span> <span class="o">=</span> <span class="n">glorot_uniform</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;conv2_&#39;</span><span class="o">+</span><span class="n">conv_id</span><span class="p">)(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X</span><span class="o">=</span><span class="n">LeakyReLU</span><span class="p">(</span><span class="n">alpha</span><span class="o">=.</span><span class="mi">1</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;LeakyReLU2_&#39;</span><span class="o">+</span><span class="n">conv_id</span><span class="p">)(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">UpSampling2D</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span><span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;upsample_&#39;</span><span class="o">+</span><span class="n">conv_id</span><span class="p">)(</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">X</span></div>
+
+<div class="viewcode-block" id="DeepPrior.downsampling_block"><a class="viewcode-back" href="../../../Inpainters.html#picasso.inpainters.deep_prior_inpainter.DeepPrior.downsampling_block">[docs]</a>    <span class="k">def</span> <span class="nf">downsampling_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">filters</span><span class="p">,</span> <span class="n">stage</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Implementation of a down-sampling block</span>
+
+<span class="sd">        **Parameters**</span>
+
+<span class="sd">        - ``X``:</span>
+<span class="sd">            input tensor of shape ``(m, n_H_prev, n_W_prev, n_C_prev)``</span>
+
+<span class="sd">        - ``f``: {int}</span>
+<span class="sd">            specifying the shape of the middle CONV&#39;s window for the main path</span>
+<span class="sd">        - ``filters`` :{int}</span>
+<span class="sd">            defining the number of filters in the CONV layers of the main path</span>
+<span class="sd">        - ``stage`` :{int}</span>
+<span class="sd">            used to name the layers, depending on their position in the network</span>
+<span class="sd">        - ``block``: {string}</span>
+<span class="sd">            used to name the layers, depending on their position in the network</span>
+
+
+<span class="sd">        **Returns**</span>
+
+<span class="sd">        - ``X``:</span>
+<span class="sd">            output of the convolutional block, tensor of shape ``(n_H, n_W, n_C)``</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">conv_id</span> <span class="o">=</span>   <span class="n">block</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span>
+
+        <span class="n">X</span> <span class="o">=</span> <span class="n">Conv2D</span><span class="p">(</span> <span class="n">filters</span>  <span class="p">,</span>  <span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="n">f</span><span class="p">)</span>  <span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">,</span>
+               <span class="n">kernel_initializer</span> <span class="o">=</span> <span class="n">glorot_uniform</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;conv1_&#39;</span><span class="o">+</span><span class="n">conv_id</span><span class="p">)(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">Conv2D</span><span class="p">(</span> <span class="n">filters</span>  <span class="p">,</span>  <span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="n">f</span><span class="p">)</span> <span class="p">,</span> <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="n">s</span><span class="p">,</span><span class="n">s</span><span class="p">)</span> <span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s1">&#39;valid&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;downsample_&#39;</span><span class="o">+</span><span class="n">conv_id</span><span class="p">)(</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="n">X</span><span class="o">=</span><span class="n">LeakyReLU</span><span class="p">(</span><span class="n">alpha</span><span class="o">=.</span><span class="mi">1</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;LeakyReLU1_&#39;</span><span class="o">+</span><span class="n">conv_id</span><span class="p">)(</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="n">X</span> <span class="o">=</span> <span class="n">Conv2D</span><span class="p">(</span> <span class="n">filters</span>  <span class="p">,</span>  <span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="n">f</span><span class="p">)</span>  <span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">,</span>
+               <span class="n">kernel_initializer</span> <span class="o">=</span> <span class="n">glorot_uniform</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;conv2_&#39;</span><span class="o">+</span><span class="n">conv_id</span><span class="p">)(</span><span class="n">X</span> <span class="p">)</span>
+        <span class="n">X</span><span class="o">=</span><span class="n">LeakyReLU</span><span class="p">(</span><span class="n">alpha</span><span class="o">=.</span><span class="mi">1</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;LeakyReLU2_&#39;</span><span class="o">+</span><span class="n">conv_id</span><span class="p">)(</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">X</span></div>
+
+<div class="viewcode-block" id="DeepPrior.myloss"><a class="viewcode-back" href="../../../Inpainters.html#picasso.inpainters.deep_prior_inpainter.DeepPrior.myloss">[docs]</a>    <span class="k">def</span> <span class="nf">myloss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span><span class="n">y_pred</span> <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loss function evaluated outside the masked region and normalized by  the ground-truth norm.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Kmask</span> <span class="o">=</span> <span class="n">K</span><span class="o">.</span><span class="n">not_equal</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span><span class="mi">0</span> <span class="p">)</span>
+        <span class="n">y1</span><span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">boolean_mask</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span><span class="n">Kmask</span><span class="p">)</span>
+        <span class="n">y2</span><span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">boolean_mask</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span><span class="n">Kmask</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">K</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">K</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">K</span><span class="o">.</span><span class="n">square</span><span class="p">(</span>   <span class="n">y2</span>  <span class="o">-</span><span class="n">y1</span>    <span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span> <span class="o">/</span><span class="n">K</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">K</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">K</span><span class="o">.</span><span class="n">square</span><span class="p">(</span>   <span class="n">y1</span> <span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="DeepPrior.my_accuracy"><a class="viewcode-back" href="../../../Inpainters.html#picasso.inpainters.deep_prior_inpainter.DeepPrior.my_accuracy">[docs]</a>    <span class="k">def</span> <span class="nf">my_accuracy</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span>  <span class="n">y_true</span> <span class="p">,</span><span class="n">y_pred</span> <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Accuracy defined as the ratio between  the 2-norms of the prediction and of the ground-truth.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Kmask</span> <span class="o">=</span> <span class="n">K</span><span class="o">.</span><span class="n">not_equal</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span><span class="mi">0</span> <span class="p">)</span>
+        <span class="n">y1</span><span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">boolean_mask</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span><span class="n">Kmask</span><span class="p">)</span>
+        <span class="n">y2</span><span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">boolean_mask</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span><span class="n">Kmask</span><span class="p">)</span>
+        <span class="k">return</span>   <span class="n">K</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">K</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">K</span><span class="o">.</span><span class="n">square</span><span class="p">(</span>   <span class="n">y2</span>   <span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>  <span class="o">/</span><span class="n">K</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">K</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">K</span><span class="o">.</span><span class="n">square</span><span class="p">(</span>   <span class="n">y1</span> <span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span></div>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">input_shape</span><span class="p">,</span>
+        <span class="n">nd</span> <span class="o">=</span><span class="p">[</span><span class="mi">16</span><span class="p">,</span><span class="mi">32</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="mi">128</span>  <span class="p">,</span><span class="mi">128</span>  <span class="p">,</span><span class="mi">128</span><span class="p">],</span>
+        <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">meshgrid</span><span class="o">=</span><span class="kc">True</span>   <span class="p">):</span>
+
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the Deep -Prior network with parameters reported in the prescription of</span>
+<span class="sd">         `Deep-Prior Supplement Material &lt;https://box.skoltech.ru/index.php/s/ib52BOoV58ztuPM#pdfviewer&gt;`_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rdseed</span><span class="o">=</span><span class="mi">123456789</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meshgrid</span><span class="o">=</span><span class="n">meshgrid</span>
+        <span class="n">X_input</span> <span class="o">=</span>  <span class="n">Input</span><span class="p">(</span>   <span class="n">input_shape</span> <span class="p">)</span>
+        <span class="n">nu</span><span class="o">=</span><span class="n">nd</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">kd</span> <span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">nu</span><span class="p">)</span>
+        <span class="n">ku</span> <span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">nu</span><span class="p">)</span>
+        <span class="n">X</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">downsampling_block</span><span class="p">(</span><span class="n">X_input</span><span class="p">,</span> <span class="n">kd</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">nd</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">)</span>
+        <span class="c1">#encoder block</span>
+        <span class="k">for</span>  <span class="n">i</span> <span class="ow">in</span>  <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nu</span><span class="p">)):</span>
+            <span class="n">X</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">downsampling_block</span><span class="p">(</span><span class="n">X</span> <span class="p">,</span> <span class="n">kd</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nd</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">i</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">)</span>
+        <span class="k">for</span>  <span class="n">i</span> <span class="ow">in</span>  <span class="nb">range</span><span class="p">(</span> <span class="nb">len</span><span class="p">(</span><span class="n">nu</span><span class="p">)):</span>
+            <span class="n">X</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upsampling_block</span><span class="p">(</span><span class="n">X</span> <span class="p">,</span> <span class="n">ku</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nu</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">i</span><span class="p">,</span> <span class="s1">&#39;u&#39;</span><span class="p">)</span>
+
+        <span class="n">X</span> <span class="o">=</span> <span class="n">UpSampling2D</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span><span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;upsample_last&#39;</span><span class="p">)(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">Conv2D</span><span class="p">(</span> <span class="mi">1</span>  <span class="p">,</span>  <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span> <span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">,</span>
+                   <span class="n">kernel_initializer</span> <span class="o">=</span> <span class="n">glorot_uniform</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;lastconv&#39;</span><span class="p">)(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X</span><span class="o">=</span><span class="n">LeakyReLU</span><span class="p">(</span><span class="n">alpha</span><span class="o">=.</span><span class="mi">1</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;LeakyReLU_last&#39;</span> <span class="p">)(</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="c1">#X= Dense( 1 ,activation=&#39;relu&#39;, name=&#39;FC&#39;)(X)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">inputs</span> <span class="o">=</span> <span class="n">X_input</span><span class="p">,</span> <span class="n">outputs</span> <span class="o">=</span> <span class="n">X</span> <span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;DeepPrior&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="DeepPrior.summary"><a class="viewcode-back" href="../../../Inpainters.html#picasso.inpainters.deep_prior_inpainter.DeepPrior.summary">[docs]</a>    <span class="k">def</span> <span class="nf">summary</span> <span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the model summary</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span></div>
+<div class="viewcode-block" id="DeepPrior.compile"><a class="viewcode-back" href="../../../Inpainters.html#picasso.inpainters.deep_prior_inpainter.DeepPrior.compile">[docs]</a>    <span class="k">def</span> <span class="nf">compile</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optimizer</span>   <span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compile the architecture</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">myloss</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">my_accuracy</span><span class="p">]</span> <span class="p">)</span></div>
+
+<div class="viewcode-block" id="DeepPrior.train"><a class="viewcode-back" href="../../../Inpainters.html#picasso.inpainters.deep_prior_inpainter.DeepPrior.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span> <span class="p">,</span> <span class="n">X</span> <span class="p">,</span><span class="n">epochs</span> <span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span>  <span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Iterate over the epochs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">train_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span> <span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="o">=</span><span class="n">train_out</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="s1">&#39;loss&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span>  <span class="n">train_out</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="s1">&#39;my_accuracy&#39;</span><span class="p">]</span></div>
+<div class="viewcode-block" id="DeepPrior.evaluate"><a class="viewcode-back" href="../../../Inpainters.html#picasso.inpainters.deep_prior_inpainter.DeepPrior.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span> <span class="p">:</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">preds</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">z</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="p">:</span>
+            <span class="nb">print</span> <span class="p">(</span><span class="s2">&quot;Loss = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">preds</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="nb">print</span> <span class="p">(</span><span class="s2">&quot;Test Accuracy = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">preds</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span></div>
+
+<div class="viewcode-block" id="DeepPrior.predict"><a class="viewcode-back" href="../../../Inpainters.html#picasso.inpainters.deep_prior_inpainter.DeepPrior.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inpainting with Deep -Prior</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pred</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Z</span><span class="p">)</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">int_</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span> <span class="o">+</span> <span class="n">pred</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">int_</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="p">)</span> <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pred</span></div>
+
+<div class="viewcode-block" id="DeepPrior.setup_input"><a class="viewcode-back" href="../../../Inpainters.html#picasso.inpainters.deep_prior_inpainter.DeepPrior.setup_input">[docs]</a>    <span class="k">def</span> <span class="nf">setup_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">fname_masked</span>    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Preprocessing the corrupted image and setting up the generative images.</span>
+<span class="sd">        By default deep-prior will generate pixel values starting from an image with</span>
+<span class="sd">        uniformly random  distributed pixels (in :math:`[0,1/10]`).</span>
+<span class="sd">        Otherwise if ``meshgrid==True``, generator is a set of 4 images, i.e.  a upward, downward, leftward and rightward diagonal</span>
+<span class="sd">        gradients_summary.</span>
+<span class="sd">        This mitigates the gridding pattern injected in the reconstruction area.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">maskdmap</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fname_masked</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">meshgrid</span> <span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">maskdmap</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">maskdmap</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">xv</span><span class="p">,</span> <span class="n">yv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="n">up</span> <span class="o">=</span>  <span class="p">(</span><span class="n">xv</span><span class="o">-</span><span class="n">yv</span>  <span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+            <span class="n">down</span> <span class="o">=</span>  <span class="p">(</span><span class="n">xv</span><span class="o">+</span><span class="n">yv</span>  <span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+
+        <span class="n">holemask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_not_equal</span><span class="p">(</span><span class="n">maskdmap</span><span class="p">,</span><span class="mi">0</span>  <span class="p">)</span> <span class="o">.</span><span class="n">mask</span>
+
+        <span class="n">a</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">b</span><span class="o">=</span><span class="mi">1</span>
+        <span class="n">maxval</span> <span class="o">=</span> <span class="n">maskdmap</span><span class="p">[</span><span class="n">holemask</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="p">;</span> <span class="n">minval</span> <span class="o">=</span> <span class="n">maskdmap</span><span class="p">[</span><span class="n">holemask</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="n">maskdmap</span> <span class="o">=</span><span class="n">MinMaxRescale</span><span class="p">(</span><span class="n">maskdmap</span><span class="p">,</span><span class="n">a</span> <span class="o">=</span><span class="n">a</span> <span class="p">,</span><span class="n">b</span><span class="o">=</span><span class="n">b</span> <span class="p">)</span>
+
+        <span class="n">maskdmap</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span> <span class="n">holemask</span><span class="p">)]</span><span class="o">=</span><span class="mf">0.</span>
+
+        <span class="n">maskdmap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span> <span class="n">maskdmap</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span> <span class="n">holemask</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">randstate</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rdseed</span><span class="p">)</span>
+        <span class="n">noisemap</span> <span class="o">=</span>     <span class="n">randstate</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">b</span> <span class="p">,</span>  <span class="n">size</span><span class="o">=</span><span class="n">maskdmap</span><span class="o">.</span><span class="n">shape</span> <span class="p">)</span>  <span class="c1"># see the Deep prior paper for the choice b=1./10</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">min</span> <span class="o">=</span> <span class="n">minval</span><span class="p">;</span>  <span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">=</span> <span class="n">maxval</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">meshgrid</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Z</span> <span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">xv</span><span class="p">,</span><span class="n">yv</span><span class="p">,</span> <span class="n">up</span><span class="p">,</span><span class="n">down</span><span class="p">]</span> <span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">maskdmap</span><span class="p">;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">randstate</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rdseed</span><span class="p">)</span>
+            <span class="n">noisemap</span> <span class="o">=</span>     <span class="n">randstate</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">b</span><span class="o">/</span><span class="mi">10</span>  <span class="p">,</span>  <span class="n">size</span><span class="o">=</span><span class="n">maskdmap</span><span class="o">.</span><span class="n">shape</span> <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">maskdmap</span><span class="p">;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Z</span> <span class="o">=</span> <span class="n">noisemap</span> <span class="p">;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="DeepPrior.rescale_back"><a class="viewcode-back" href="../../../Inpainters.html#picasso.inpainters.deep_prior_inpainter.DeepPrior.rescale_back">[docs]</a>    <span class="k">def</span> <span class="nf">rescale_back</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span> <span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        rescale inpainted map to physical units .</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">MinMaxRescale</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span> <span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Giuseppe Puglisi, Xiran Bai, Yuuki Omori
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
